@@ -17,7 +17,6 @@ export default function Index() {
     const insets = useSafeAreaInsets();
     const [value, setValue] = useState("");
 
-    // Set the initial minimum height of your input box
     const [inputHeight, setInputHeight] = useState(24);
 
     return (
@@ -146,9 +145,7 @@ export default function Index() {
                     />
 
                     <View style={styles.actionsContainer}>
-                        <View style={styles.leftActions}>
-                            {/* Future buttons */}
-                        </View>
+                        <View style={styles.leftActions}></View>
 
                         <Pressable
                             style={styles.sendButton}
@@ -197,9 +194,6 @@ const styles = StyleSheet.create({
     input: {
         width: "100%",
         fontSize: 16,
-        // backgroundColor: "red",
-        // lineHeight: 21,
-        // color: "#222",
     },
     actionsContainer: {
         height: 38,
