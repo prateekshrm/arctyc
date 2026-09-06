@@ -32,6 +32,11 @@ export default (): ExpoConfig => {
                 monochromeImage: "./assets/images/android-icon-monochrome.png",
             },
             predictiveBackGestureEnabled: false,
+            package: isDevelopment
+                ? "com.prateeksh.arctyc.dev"
+                : isPreview
+                  ? "com.prateeksh.arctyc.preview"
+                  : "com.prateeksh.arctyc",
         },
 
         web: {
@@ -78,6 +83,12 @@ export default (): ExpoConfig => {
         experiments: {
             typedRoutes: true,
             reactCompiler: true,
+        },
+
+        extra: {
+            eas: {
+                projectId: "031c8d95-660c-4a3d-8e7e-c49ffd25381e",
+            },
         },
     };
 };
