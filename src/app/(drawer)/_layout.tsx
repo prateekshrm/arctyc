@@ -1,3 +1,4 @@
+import Header from "@/components/ui/Header";
 import { Drawer } from "expo-router/drawer";
 import { Layers, MessageSquareText, Settings } from "lucide-react-native";
 
@@ -6,6 +7,7 @@ export default function RootLayout() {
         <Drawer
             screenOptions={{
                 drawerActiveTintColor: "black",
+                header: ({ options }) => <Header title={options.title ?? ""} />,
             }}
         >
             <Drawer.Screen

@@ -29,7 +29,8 @@ export default function Index() {
             <ScrollView
                 style={styles.container}
                 contentContainerStyle={{
-                    paddingBottom: insets.bottom + 150,
+                    paddingTop: insets.top + 70,
+                    paddingBottom: insets.bottom + 126 + inputHeight,
                 }}
                 showsVerticalScrollIndicator={false}
             >
@@ -173,7 +174,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 16,
-        paddingTop: 16,
     },
     inputArea: {
         position: "absolute",
@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         width: "100%",
-        padding: 10,
-        backgroundColor: "white",
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        backgroundColor: "lightgray",
         borderRadius: 28,
-        borderWidth: 2,
     },
     input: {
         width: "100%",
