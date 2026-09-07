@@ -58,16 +58,7 @@ export default (): ExpoConfig => {
 
             "expo-background-task",
             "expo-secure-store",
-
-            [
-                "llama.rn",
-                {
-                    enableEntitlements: true,
-                    entitlementsProfile: "production",
-                    forceCxx20: true,
-                    enableOpenCL: true,
-                },
-            ],
+            "llama.rn",
 
             [
                 "expo-build-properties",

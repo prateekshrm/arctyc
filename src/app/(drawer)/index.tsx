@@ -1,4 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { StatusBar } from "expo-status-bar";
 import { ArrowUp } from "lucide-react-native";
 import { useState } from "react";
 import {
@@ -24,10 +25,10 @@ export default function Index() {
             style={styles.mainContainer}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
+            <StatusBar style="dark" />
             <ScrollView
                 style={styles.container}
                 contentContainerStyle={{
-                    paddingTop: insets.top,
                     paddingBottom: insets.bottom + 150,
                 }}
                 showsVerticalScrollIndicator={false}
@@ -172,6 +173,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 16,
+        paddingTop: 16,
     },
     inputArea: {
         position: "absolute",
