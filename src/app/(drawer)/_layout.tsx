@@ -13,7 +13,8 @@ export default function RootLayout() {
             <Drawer.Screen
                 name="index"
                 options={{
-                    title: "Chat",
+                    title: "Arctyc",
+                    drawerLabel: "Chat",
                     drawerIcon: ({ color, size }) => (
                         <MessageSquareText size={size} color={color} />
                     ),
@@ -23,6 +24,7 @@ export default function RootLayout() {
                 name="models"
                 options={{
                     title: "Models",
+                    drawerLabel: "Models",
                     drawerIcon: ({ color, size }) => (
                         <Layers size={size} color={color} />
                     ),
@@ -32,6 +34,7 @@ export default function RootLayout() {
                 name="settings"
                 options={{
                     title: "Settings",
+                    drawerLabel: "Settings",
                     drawerIcon: ({ color, size }) => (
                         <Settings size={size} color={color} />
                     ),
