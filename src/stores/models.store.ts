@@ -25,6 +25,7 @@ type ModelStore = {
     isModelLoading: boolean;
 
     setActiveModel: (id: string | null) => void;
+    setIsModelLoading: (loading: boolean) => void;
     updateModel: (id: string, updates: Partial<Model>) => void;
     addModel: (model: Model) => void;
     removeModel: (id: string) => void;
@@ -45,6 +46,11 @@ export const useModelStore = create<ModelStore>((set) => ({
     setActiveModel: (id) =>
         set({
             activeModelId: id,
+        }),
+
+    setIsModelLoading: (loading) =>
+        set({
+            isModelLoading: loading,
         }),
 
     updateModel: (id, updates) =>

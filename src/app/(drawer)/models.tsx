@@ -1,12 +1,21 @@
 import {
     AlertCircle,
     CheckCircle2,
+    Cpu,
     Download,
+    PowerOff,
     Trash2,
     X,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+    ActivityIndicator,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MODEL_CATALOG, ModelDefinition } from "@/data/models";
@@ -15,6 +24,8 @@ import {
     checkModel,
     deleteModel,
     downloadModel,
+    loadModel,
+    unloadModel,
 } from "@/services/model-manager";
 import { useModelStore } from "@/stores/models.store";
 import {
@@ -106,10 +117,14 @@ const ModelCard = ({
     const modelState = useModelStore((state) =>
         state.models.find((m) => m.id === model.id),
     );
+    const activeModelId = useModelStore((state) => state.activeModelId);
+    const isModelLoading = useModelStore((state) => state.isModelLoading);
 
     const status = modelState?.status ?? "available";
     const progress = modelState?.downloadProgress ?? 0;
     const progressPercent = Math.round(progress * 100);
+
+    const [isLocalLoading, setIsLocalLoading] = useState(false);
 
     const handleDownload = () => {
         downloadModel(model.id).catch(() => {});
@@ -123,8 +138,25 @@ const ModelCard = ({
         deleteModel(model.id).catch(() => {});
     };
 
+    const handleLoad = async () => {
+        setIsLocalLoading(true);
+        try {
+            await loadModel(model.id);
+        } catch {
+        } finally {
+            setIsLocalLoading(false);
+        }
+    };
+
+    const handleUnload = () => {
+        unloadModel(model.id).catch(() => {});
+    };
+
     const isDownloading = status === "downloading";
-    const isDownloaded = status === "downloaded" || status === "loaded";
+    const isCurrentActive = activeModelId === model.id && status === "loaded";
+    const isCurrentLoading = status === "loading" || isLocalLoading;
+    const isDownloaded =
+        status === "downloaded" || isCurrentActive || isCurrentLoading;
     const isError = status === "error";
 
     return (
@@ -144,14 +176,21 @@ const ModelCard = ({
                     <Text style={styles.provider}>{model.provider}</Text>
                 </View>
 
-                {isDownloaded && (
+                {isCurrentActive ? (
+                    <View style={styles.loadedBadge}>
+                        <Cpu size={13} color="#2563eb" />
+                        <Text style={styles.loadedBadgeText}>
+                            Active in Memory
+                        </Text>
+                    </View>
+                ) : isDownloaded ? (
                     <View style={styles.downloadedBadge}>
                         <CheckCircle2 size={13} color="#16a34a" />
                         <Text style={styles.downloadedBadgeText}>
                             Downloaded
                         </Text>
                     </View>
-                )}
+                ) : null}
 
                 {isDownloading && (
                     <View style={styles.downloadingBadge}>
@@ -171,7 +210,7 @@ const ModelCard = ({
             </View>
 
             {/* Error Message Callout */}
-            {isError && (
+            {Boolean(modelState?.error) && (
                 <View style={styles.errorBox}>
                     <AlertCircle
                         size={15}
@@ -179,8 +218,7 @@ const ModelCard = ({
                         style={{ marginTop: 1 }}
                     />
                     <Text style={styles.errorText} numberOfLines={2}>
-                        {modelState?.error ??
-                            "Download failed. Please check your connection."}
+                        {modelState?.error}
                     </Text>
                 </View>
             )}
@@ -226,21 +264,93 @@ const ModelCard = ({
                         </Text>
                     </Pressable>
                 ) : isDownloaded ? (
-                    <View style={styles.downloadedActionsRow}>
-                        <View style={styles.readyIndicator}>
-                            <View style={styles.readyDot} />
-                            <Text style={styles.readyText}>Ready offline</Text>
+                    <View style={styles.downloadedContainer}>
+                        <View style={styles.downloadedActionsRow}>
+                            <View style={styles.readyIndicator}>
+                                <View
+                                    style={[
+                                        styles.readyDot,
+                                        isCurrentActive && styles.activeDot,
+                                    ]}
+                                />
+                                <Text
+                                    style={[
+                                        styles.readyText,
+                                        isCurrentActive && styles.activeText,
+                                    ]}
+                                >
+                                    {isCurrentActive
+                                        ? "Active in memory"
+                                        : isCurrentLoading
+                                          ? "Loading into memory..."
+                                          : "Ready offline"}
+                                </Text>
+                            </View>
+                            <Pressable
+                                onPress={handleDelete}
+                                disabled={isCurrentLoading}
+                                style={({ pressed }) => [
+                                    styles.deleteButton,
+                                    pressed && styles.buttonPressed,
+                                    isCurrentLoading && styles.buttonDisabled,
+                                ]}
+                            >
+                                <Trash2 size={14} color="#dc2626" />
+                                <Text style={styles.deleteButtonText}>
+                                    Delete
+                                </Text>
+                            </Pressable>
                         </View>
-                        <Pressable
-                            onPress={handleDelete}
-                            style={({ pressed }) => [
-                                styles.deleteButton,
-                                pressed && styles.buttonPressed,
-                            ]}
-                        >
-                            <Trash2 size={15} color="#dc2626" />
-                            <Text style={styles.deleteButtonText}>Delete</Text>
-                        </Pressable>
+
+                        {isCurrentActive ? (
+                            <Pressable
+                                onPress={handleUnload}
+                                style={({ pressed }) => [
+                                    styles.unloadButton,
+                                    pressed && styles.buttonPressed,
+                                ]}
+                            >
+                                <PowerOff size={15} color="#dc2626" />
+                                <Text style={styles.unloadButtonText}>
+                                    Unload from Memory
+                                </Text>
+                            </Pressable>
+                        ) : (
+                            <Pressable
+                                onPress={handleLoad}
+                                disabled={isModelLoading || isCurrentLoading}
+                                style={({ pressed }) => [
+                                    styles.loadButton,
+                                    isCurrentLoading && styles.loadingButton,
+                                    pressed &&
+                                        !isCurrentLoading &&
+                                        styles.buttonPressed,
+                                    isModelLoading &&
+                                        !isCurrentLoading &&
+                                        styles.buttonDisabled,
+                                ]}
+                            >
+                                {isCurrentLoading ? (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#38bdf8"
+                                    />
+                                ) : (
+                                    <Cpu size={15} color="#ffffff" />
+                                )}
+                                <Text
+                                    style={[
+                                        styles.loadButtonText,
+                                        isCurrentLoading &&
+                                            styles.loadingButtonText,
+                                    ]}
+                                >
+                                    {isCurrentLoading
+                                        ? "Loading into Memory..."
+                                        : "Load into Memory"}
+                                </Text>
+                            </Pressable>
+                        )}
                     </View>
                 ) : (
                     <Pressable
@@ -593,6 +703,85 @@ const styles = StyleSheet.create({
         color: "#dc2626",
         fontSize: 12,
         fontWeight: "600",
+    },
+
+    downloadedContainer: {
+        gap: 12,
+    },
+
+    loadButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        backgroundColor: "#0f172a",
+        paddingVertical: 11,
+        paddingHorizontal: 20,
+        borderRadius: 12,
+    },
+
+    loadingButton: {
+        backgroundColor: "#1e293b",
+    },
+
+    loadButtonText: {
+        color: "#ffffff",
+        fontSize: 13.5,
+        fontWeight: "600",
+    },
+
+    loadingButtonText: {
+        color: "#f8fafc",
+        fontWeight: "600",
+    },
+
+    unloadButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        backgroundColor: "#fef2f2",
+        borderWidth: 1,
+        borderColor: "#fecaca",
+        paddingVertical: 11,
+        paddingHorizontal: 20,
+        borderRadius: 12,
+    },
+
+    unloadButtonText: {
+        color: "#dc2626",
+        fontSize: 13.5,
+        fontWeight: "600",
+    },
+
+    loadedBadge: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingHorizontal: 9,
+        paddingVertical: 4,
+        borderRadius: 999,
+        backgroundColor: "#eff6ff",
+        borderWidth: 1,
+        borderColor: "#bfdbfe",
+    },
+
+    loadedBadgeText: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#2563eb",
+    },
+
+    activeDot: {
+        backgroundColor: "#2563eb",
+    },
+
+    activeText: {
+        color: "#2563eb",
+    },
+
+    buttonDisabled: {
+        opacity: 0.5,
     },
 
     buttonPressed: {

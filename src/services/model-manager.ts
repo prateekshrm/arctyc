@@ -5,6 +5,11 @@ import { MODEL_CATALOG } from "@/data/models";
 import { useModelStore } from "@/stores/models.store";
 
 const activeDownloadTasks = new Map<string, DownloadTask>();
+let activeLanguageModel: ReturnType<typeof llama.languageModel> | null = null;
+
+export function getActiveLanguageModel() {
+    return activeLanguageModel;
+}
 
 function getModelById(id: string) {
     const model = MODEL_CATALOG.find((model) => model.id === id);
@@ -67,13 +72,24 @@ export async function checkModel(id: string) {
             if (targetFile.exists) {
                 targetFile.delete();
             }
-        } catch { }
+        } catch {}
     }
 
     const localPath = targetFile.uri.replace(/^file:\/\//, "");
+    const store = useModelStore.getState();
+    const currentModel = store.models.find((m) => m.id === id);
+    const isCurrentlyLoaded =
+        currentModel?.status === "loaded" && store.activeModelId === id;
+    const isCurrentlyLoading = currentModel?.status === "loading";
 
-    useModelStore.getState().updateModel(id, {
-        status: isValid ? "downloaded" : "available",
+    store.updateModel(id, {
+        status: isValid
+            ? isCurrentlyLoaded
+                ? "loaded"
+                : isCurrentlyLoading
+                  ? "loading"
+                  : "downloaded"
+            : "available",
         localPath: isValid ? localPath : undefined,
         downloadProgress: isValid ? 1 : undefined,
     });
@@ -104,7 +120,7 @@ export async function downloadModel(id: string) {
         if (tempFile.exists) {
             tempFile.delete();
         }
-    } catch { }
+    } catch {}
 
     store.updateModel(id, {
         status: "downloading",
@@ -168,7 +184,7 @@ export async function downloadModel(id: string) {
             if (tempFile.exists) {
                 tempFile.delete();
             }
-        } catch { }
+        } catch {}
 
         const message =
             error instanceof Error
@@ -190,7 +206,7 @@ export async function cancelDownload(id: string) {
     if (task) {
         try {
             task.cancel();
-        } catch { }
+        } catch {}
         activeDownloadTasks.delete(id);
     }
 
@@ -201,7 +217,7 @@ export async function cancelDownload(id: string) {
         if (tempFile.exists) {
             tempFile.delete();
         }
-    } catch { }
+    } catch {}
 
     useModelStore.getState().updateModel(id, {
         status: "available",
@@ -215,6 +231,11 @@ export async function deleteModel(id: string) {
         await cancelDownload(id);
     }
 
+    const store = useModelStore.getState();
+    if (store.activeModelId === id) {
+        await unloadModel(id);
+    }
+
     const model = getModelById(id);
     const { targetFile, tempFile } = getModelFiles(model.modelId);
 
@@ -222,24 +243,23 @@ export async function deleteModel(id: string) {
         if (tempFile.exists) {
             tempFile.delete();
         }
-    } catch { }
+    } catch {}
 
     try {
         if (targetFile.exists) {
             targetFile.delete();
         }
-    } catch { }
+    } catch {}
 
-    useModelStore.getState().updateModel(id, {
+    store.updateModel(id, {
         status: "available",
         downloadProgress: undefined,
         localPath: undefined,
         error: undefined,
     });
 
-    const activeId = useModelStore.getState().activeModelId;
-    if (activeId === id) {
-        useModelStore.getState().setActiveModel(null);
+    if (store.activeModelId === id) {
+        store.setActiveModel(null);
     }
 }
 
@@ -250,22 +270,65 @@ export function getDownloadedModelPath(id: string) {
     return targetFile.uri.replace(/^file:\/\//, "");
 }
 
+export async function unloadModel(id?: string) {
+    const store = useModelStore.getState();
+    const targetId = id ?? store.activeModelId;
+
+    if (activeLanguageModel) {
+        try {
+            await activeLanguageModel.unload();
+        } catch (error) {
+            console.warn("Failed to unload model from memory:", error);
+        }
+        activeLanguageModel = null;
+    }
+
+    // Reset status for any models that were loaded or loading
+    store.models.forEach((m) => {
+        if (
+            m.status === "loaded" ||
+            m.status === "loading" ||
+            (targetId && m.id === targetId)
+        ) {
+            store.updateModel(m.id, {
+                status: "downloaded",
+            });
+        }
+    });
+
+    if (!id || store.activeModelId === id) {
+        store.setActiveModel(null);
+    }
+    store.setIsModelLoading(false);
+}
+
 export async function loadModel(id: string) {
     const model = getModelById(id);
     const store = useModelStore.getState();
 
+    // If this model is already loaded and active, return it
+    if (store.activeModelId === id && activeLanguageModel) {
+        return activeLanguageModel;
+    }
+
+    // Unload any currently active model first to ensure only 1 model is loaded into memory
+    if (store.activeModelId || activeLanguageModel) {
+        await unloadModel();
+    }
+
+    const downloaded = await checkModel(id);
+
+    if (!downloaded) {
+        throw new Error(`Model "${model.name}" has not been downloaded.`);
+    }
+
+    store.setIsModelLoading(true);
     store.updateModel(id, {
         status: "loading",
         error: undefined,
     });
 
     try {
-        const downloaded = await checkModel(id);
-
-        if (!downloaded) {
-            throw new Error(`Model "${model.name}" has not been downloaded.`);
-        }
-
         const { targetFile } = getModelFiles(model.modelId);
         const modelPath = targetFile.uri.replace(/^file:\/\//, "");
 
@@ -273,9 +336,12 @@ export async function loadModel(id: string) {
 
         await languageModel.prepare();
 
+        activeLanguageModel = languageModel;
+
         store.updateModel(id, {
             status: "loaded",
             localPath: modelPath,
+            error: undefined,
         });
 
         store.setActiveModel(id);
@@ -286,10 +352,12 @@ export async function loadModel(id: string) {
             error instanceof Error ? error.message : "Failed to load model.";
 
         store.updateModel(id, {
-            status: "error",
+            status: "downloaded",
             error: message,
         });
 
         throw error;
+    } finally {
+        store.setIsModelLoading(false);
     }
 }
