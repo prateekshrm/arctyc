@@ -14,6 +14,11 @@ export type ModelDefinition = {
     provider: string;
     family: ModelFamily;
 
+    /**
+     * Hugging Face model identifier:
+     *
+     * owner/repository/filename.gguf
+     */
     modelId: string;
 
     parameterCount: string;
@@ -47,7 +52,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         provider: "Qwen",
         family: "qwen",
 
-        modelId: "Qwen/Qwen3-0.6B-GGUF/Qwen3-0.6B-Q4_K_M.gguf",
+        modelId: "second-state/Qwen3-0.6B-GGUF/Qwen3-0.6B-Q4_K_M.gguf",
 
         parameterCount: "0.6B",
         quantization: "Q4_K_M",
@@ -73,7 +78,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         provider: "Qwen",
         family: "qwen",
 
-        modelId: "Qwen/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf",
+        modelId: "ggml-org/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf",
 
         parameterCount: "1.7B",
         quantization: "Q4_K_M",
@@ -87,10 +92,10 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
 
-        qualityScore: 100,
+        qualityScore: 55,
 
         description:
-            "Great balance of speed, quality, reasoning, and device requirements.",
+            "Small and efficient model offering a strong balance of quality and performance.",
     },
 
     {
@@ -113,10 +118,10 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
 
-        qualityScore: 90,
+        qualityScore: 80,
 
         description:
-            "A stronger model for reasoning and coding while remaining practical on modern phones.",
+            "Strong general-purpose local model for reasoning, coding, and everyday conversations.",
     },
 
     {
@@ -139,10 +144,10 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
 
-        qualityScore: 85,
+        qualityScore: 90,
 
         description:
-            "High-quality local model for powerful devices. Requires substantially more memory and storage.",
+            "High-quality local model for powerful phones and devices with ample memory.",
     },
 
     // ─────────────────────────────────────────────
@@ -156,12 +161,12 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         family: "llama",
 
         modelId:
-            "tensorblock/Llama-3.2-1B-Instruct-GGUF/Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+            "tensorblock/Llama-3.2-1B-Instruct-GGUF/Llama-3.2-1B-Instruct-Q3_K_M.gguf",
 
         parameterCount: "1B",
-        quantization: "Q4_K_M",
+        quantization: "Q3_K_M",
 
-        sizeBytes: 808 * MB,
+        sizeBytes: 691 * MB,
 
         requirements: {
             minimumRamGB: 3,
@@ -170,10 +175,10 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "coding"],
 
-        qualityScore: 70,
+        qualityScore: 65,
 
         description:
-            "Compact Llama model for fast everyday conversations on smaller devices.",
+            "Compact instruction-tuned Llama model for fast everyday conversations.",
     },
 
     {
@@ -182,12 +187,13 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         provider: "Meta",
         family: "llama",
 
-        modelId: "tensorblock/Llama-3.2-3B-GGUF/Llama-3.2-3B-Q4_K_M.gguf",
+        modelId:
+            "tensorblock/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q3_K_M.gguf",
 
         parameterCount: "3B",
-        quantization: "Q4_K_M",
+        quantization: "Q3_K_M",
 
-        sizeBytes: 2.02 * GB,
+        sizeBytes: 1.69 * GB,
 
         requirements: {
             minimumRamGB: 6,
@@ -199,7 +205,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         qualityScore: 75,
 
         description:
-            "A capable general-purpose Llama model for modern mid-range devices.",
+            "Capable general-purpose Llama model with a good balance of quality and device requirements.",
     },
 
     // ─────────────────────────────────────────────
@@ -217,7 +223,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         parameterCount: "1B",
         quantization: "Q4_K_M",
 
-        sizeBytes: 750 * MB,
+        sizeBytes: 806 * MB,
 
         requirements: {
             minimumRamGB: 3,
@@ -229,7 +235,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         qualityScore: 65,
 
         description:
-            "Compact Gemma model designed for efficient local inference.",
+            "Compact instruction-tuned Gemma model designed for efficient local inference.",
     },
 
     {
@@ -255,6 +261,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         qualityScore: 80,
 
         description:
-            "Strong multimodal model for capable devices, with support for text and image understanding.",
+            "Strong multimodal Gemma model for capable devices, supporting text and image understanding.",
     },
 ];
