@@ -18,7 +18,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { MODEL_CATALOG, ModelDefinition } from "@/data/models";
 import {
     cancelDownload,
     checkModel,
@@ -27,7 +26,7 @@ import {
     loadModel,
     unloadModel,
 } from "@/services/model-manager";
-import { useModelStore } from "@/stores/models.store";
+import { Model, useModelStore } from "@/stores/models.store";
 import {
     DeviceCapabilities,
     getDeviceCapabilities,
@@ -39,10 +38,12 @@ const Models = () => {
     const [device] = useState<DeviceCapabilities>(() =>
         getDeviceCapabilities(),
     );
+    const models = useModelStore((state) => state.models);
 
     useEffect(() => {
         // Synchronize local model files and clean up any broken partials on mount
-        MODEL_CATALOG.forEach((model) => {
+        const currentModels = useModelStore.getState().models;
+        currentModels.forEach((model) => {
             checkModel(model.id).catch(() => {});
         });
     }, []);
@@ -51,9 +52,9 @@ const Models = () => {
         return null;
     }
 
-    const recommendedModels = getModelRecommendations(device);
+    const recommendedModels = getModelRecommendations(device, models);
     const recommendedIds = new Set(recommendedModels.map((model) => model.id));
-    const otherModels = MODEL_CATALOG.filter(
+    const otherModels = models.filter(
         (model) => !recommendedIds.has(model.id),
     );
 
@@ -111,7 +112,7 @@ const ModelCard = ({
     model,
     isRecommended,
 }: {
-    model: ModelDefinition;
+    model: Model;
     isRecommended?: boolean;
 }) => {
     const modelState = useModelStore((state) =>

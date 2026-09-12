@@ -1,7 +1,6 @@
 import { llama } from "@react-native-ai/llama";
 import { Directory, DownloadTask, File, Paths } from "expo-file-system";
 
-import { MODEL_CATALOG } from "@/data/models";
 import { useModelStore } from "@/stores/models.store";
 
 const activeDownloadTasks = new Map<string, DownloadTask>();
@@ -12,10 +11,12 @@ export function getActiveLanguageModel() {
 }
 
 function getModelById(id: string) {
-    const model = MODEL_CATALOG.find((model) => model.id === id);
+    const model = useModelStore
+        .getState()
+        .models.find((model) => model.id === id);
 
     if (!model) {
-        throw new Error(`Model "${id}" not found in catalog.`);
+        throw new Error(`Model "${id}" not found in model store.`);
     }
 
     return model;

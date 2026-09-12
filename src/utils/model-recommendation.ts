@@ -1,25 +1,27 @@
-import { MODEL_CATALOG, ModelDefinition } from "@/data/models";
+import { Model, useModelStore } from "@/stores/models.store";
 import { DeviceCapabilities } from "@/utils/device-capabilities";
 
 export function getModelRecommendations(
     device: DeviceCapabilities,
-): ModelDefinition[] {
-    return MODEL_CATALOG.filter((model) => {
-        if (
-            device.totalRamGB !== null &&
-            device.totalRamGB < model.requirements.minimumRamGB
-        ) {
-            return false;
-        }
+    models: Model[] = useModelStore.getState().models,
+): Model[] {
+    return models
+        .filter((model) => {
+            if (
+                device.totalRamGB !== null &&
+                device.totalRamGB < model.requirements.minimumRamGB
+            ) {
+                return false;
+            }
 
-        const modelSizeGB = model.sizeBytes / 1024 ** 3;
+            const modelSizeGB = model.sizeBytes / 1024 ** 3;
 
-        if (device.freeStorageGB < modelSizeGB) {
-            return false;
-        }
+            if (device.freeStorageGB < modelSizeGB) {
+                return false;
+            }
 
-        return true;
-    })
+            return true;
+        })
         .map((model) => ({
             model,
             score: calculateScore(model, device),
@@ -30,7 +32,7 @@ export function getModelRecommendations(
 }
 
 function calculateScore(
-    model: ModelDefinition,
+    model: Model,
     device: DeviceCapabilities,
 ): number {
     let score = model.qualityScore;

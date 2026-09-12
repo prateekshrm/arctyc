@@ -1,7 +1,7 @@
-import { MODEL_CATALOG } from "@/data/models";
+import { MODEL_CATALOG, ModelDefinition } from "@/data/models";
 import { create } from "zustand";
 
-type ModelStatus =
+export type ModelStatus =
     | "available"
     | "downloading"
     | "downloaded"
@@ -9,21 +9,19 @@ type ModelStatus =
     | "loaded"
     | "error";
 
-type Model = {
-    id: string;
-    name: string;
-    size: number;
+export type Model = ModelDefinition & {
     status: ModelStatus;
     downloadProgress?: number;
     localPath?: string;
     error?: string;
 };
 
-type ModelStore = {
+export type ModelStore = {
     models: Model[];
     activeModelId: string | null;
     isModelLoading: boolean;
 
+    setModels: (models: Model[]) => void;
     setActiveModel: (id: string | null) => void;
     setIsModelLoading: (loading: boolean) => void;
     updateModel: (id: string, updates: Partial<Model>) => void;
@@ -31,17 +29,20 @@ type ModelStore = {
     removeModel: (id: string) => void;
 };
 
-const models: Model[] = MODEL_CATALOG.map((model) => ({
-    id: model.id,
-    name: model.name,
-    size: model.sizeBytes,
+const initialModels: Model[] = MODEL_CATALOG.map((model) => ({
+    ...model,
     status: "available",
 }));
 
 export const useModelStore = create<ModelStore>((set) => ({
-    models,
+    models: initialModels,
     activeModelId: null,
     isModelLoading: false,
+
+    setModels: (models) =>
+        set({
+            models,
+        }),
 
     setActiveModel: (id) =>
         set({
