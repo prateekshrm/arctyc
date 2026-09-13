@@ -56,6 +56,13 @@ export default (): ExpoConfig => {
                 },
             ],
 
+            [
+                "expo-notifications",
+                {
+                    icon: "./assets/images/notification-icon.png",
+                },
+            ],
+
             "expo-background-task",
             "expo-secure-store",
             "llama.rn",
