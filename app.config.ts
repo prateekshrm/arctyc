@@ -63,6 +63,7 @@ export default (): ExpoConfig => {
                 },
             ],
 
+            "expo-font",
             "expo-background-task",
             "expo-secure-store",
             "llama.rn",
