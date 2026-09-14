@@ -1,4 +1,8 @@
 import { usePreferencesStore } from "@/stores/preferences.store";
+import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
+import { PlusJakartaSans_500Medium } from "@expo-google-fonts/plus-jakarta-sans/500Medium";
+import { PlusJakartaSans_600SemiBold } from "@expo-google-fonts/plus-jakarta-sans/600SemiBold";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
@@ -12,15 +16,21 @@ export default function RootLayout() {
         (state) => state.preferences.onboarded,
     );
 
+    let [fontsLoaded] = useFonts({
+        PlusJakartaSans_600SemiBold,
+        PlusJakartaSans_500Medium,
+        DMSans_400Regular,
+    });
+
     useEffect(() => {
         hydrate();
     }, [hydrate]);
 
     useEffect(() => {
-        if (hydrated) {
+        if (hydrated && fontsLoaded) {
             SplashScreen.hideAsync();
         }
-    }, [hydrated]);
+    }, [hydrated, fontsLoaded]);
 
     return (
         <Stack screenOptions={{ headerShown: false }}>

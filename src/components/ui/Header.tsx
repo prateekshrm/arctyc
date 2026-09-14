@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 20,
-        fontWeight: "700",
+        fontFamily: "PlusJakartaSans_600SemiBold",
     },
 });

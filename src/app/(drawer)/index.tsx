@@ -14,7 +14,6 @@ import {
     TextInput,
     View,
 } from "react-native";
-import Markdown from "react-native-markdown-display";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Message = {
@@ -72,15 +71,28 @@ export default function Index() {
             content: "",
         };
 
+        // Capture the conversation BEFORE adding the empty
+        // assistant message. This is the context we send to the model.
+        const conversation = [...messages, userMessage];
+
         setMessages((current) => [...current, userMessage, assistantMessage]);
 
         setValue("");
+        setInputHeight(24);
         setThinking(true);
 
         try {
             const { textStream } = streamText({
                 model,
-                prompt,
+
+                // System instructions are persistent context.
+                system: "You are Arctyc, a helpful AI assistant.",
+
+                // Send the last 20 messages as context.
+                messages: conversation.slice(-20).map((message) => ({
+                    role: message.role,
+                    content: message.content,
+                })),
             });
 
             let response = "";
@@ -173,21 +185,9 @@ export default function Index() {
                                         {message.content}
                                     </Text>
                                 ) : (
-                                    <Markdown
-                                        style={{
-                                            body: {
-                                                fontSize: 16,
-                                                lineHeight: 23,
-                                                color: "black",
-                                            },
-                                            paragraph: {
-                                                marginTop: 0,
-                                                marginBottom: 8,
-                                            },
-                                        }}
-                                    >
+                                    <Text style={styles.messageText}>
                                         {message.content}
-                                    </Markdown>
+                                    </Text>
                                 )}
                             </View>
                         </View>
@@ -346,11 +346,13 @@ const styles = StyleSheet.create({
 
     thinkingText: {
         fontSize: 14,
+        fontFamily: "DMSans_400Regular",
         color: "#666",
     },
 
     messageText: {
         fontSize: 16,
+        fontFamily: "DMSans_400Regular",
         lineHeight: 23,
     },
 
@@ -383,6 +385,7 @@ const styles = StyleSheet.create({
         width: "100%",
         minHeight: 24,
         fontSize: 16,
+        fontFamily: "DMSans_400Regular",
         lineHeight: 22,
         color: "black",
         paddingTop: 0,
