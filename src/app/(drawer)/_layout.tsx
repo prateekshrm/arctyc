@@ -1,6 +1,6 @@
 import Header from "@/components/ui/Header";
 import { Drawer } from "expo-router/drawer";
-import { Layers, MessageSquareText, Settings } from "lucide-react-native";
+import Icon from "react-native-remix-icon";
 
 export default function RootLayout() {
     return (
@@ -8,6 +8,9 @@ export default function RootLayout() {
             screenOptions={{
                 drawerActiveTintColor: "black",
                 header: ({ options }) => <Header title={options.title ?? ""} />,
+                drawerLabelStyle: {
+                    fontFamily: "PlusJakartaSans_600SemiBold",
+                },
             }}
         >
             <Drawer.Screen
@@ -15,8 +18,12 @@ export default function RootLayout() {
                 options={{
                     title: "Arctyc",
                     drawerLabel: "Chat",
-                    drawerIcon: ({ color, size }) => (
-                        <MessageSquareText size={size} color={color} />
+                    drawerIcon: ({ focused, color, size }) => (
+                        <Icon
+                            name={focused ? "message-3-fill" : "message-3-line"}
+                            size={size}
+                            color={color as any}
+                        />
                     ),
                 }}
             />
@@ -25,8 +32,12 @@ export default function RootLayout() {
                 options={{
                     title: "Models",
                     drawerLabel: "Models",
-                    drawerIcon: ({ color, size }) => (
-                        <Layers size={size} color={color} />
+                    drawerIcon: ({ focused, color, size }) => (
+                        <Icon
+                            name={focused ? "stack-fill" : "stack-line"}
+                            size={size}
+                            color={color as any}
+                        />
                     ),
                 }}
             />
@@ -35,8 +46,14 @@ export default function RootLayout() {
                 options={{
                     title: "Settings",
                     drawerLabel: "Settings",
-                    drawerIcon: ({ color, size }) => (
-                        <Settings size={size} color={color} />
+                    drawerIcon: ({ focused, color, size }) => (
+                        <Icon
+                            name={
+                                focused ? "settings-4-fill" : "settings-4-line"
+                            }
+                            size={size}
+                            color={color as any}
+                        />
                     ),
                 }}
             />

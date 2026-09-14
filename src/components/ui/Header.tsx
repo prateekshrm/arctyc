@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
-import { Menu } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Icon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type HeaderProps = {
@@ -40,7 +40,7 @@ const Header = ({ title }: HeaderProps) => {
                 style={styles.pill}
                 onPress={() => (navigation as any).openDrawer()}
             >
-                <Menu size={20} />
+                <Icon name="menu-2-line" size={20} />
             </Pressable>
 
             <Text style={styles.text}>{title}</Text>
@@ -60,11 +60,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingBottom: 16,
         flexDirection: "row",
-        alignItems: "center",
         gap: 16,
     },
     pill: {
-        backgroundColor: "lightgray",
+        backgroundColor: "#e4e4e4",
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 100,
