@@ -346,13 +346,13 @@ const styles = StyleSheet.create({
 
     thinkingText: {
         fontSize: 14,
-        fontFamily: "DMSans_400Regular",
+        fontFamily: "DMSans-Regular",
         color: "#666",
     },
 
     messageText: {
         fontSize: 16,
-        fontFamily: "DMSans_400Regular",
+        fontFamily: "DMSans-Regular",
         lineHeight: 23,
     },
 
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
         width: "100%",
         minHeight: 24,
         fontSize: 16,
-        fontFamily: "DMSans_400Regular",
+        fontFamily: "DMSans-Regular",
         lineHeight: 22,
         color: "black",
         paddingTop: 0,

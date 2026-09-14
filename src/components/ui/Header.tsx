@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 20,
-        fontFamily: "PlusJakartaSans_600SemiBold",
+        fontFamily: "PlusJakartaSans-SemiBold",
     },
 });

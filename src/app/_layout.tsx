@@ -1,6 +1,7 @@
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
-import { PlusJakartaSans_500Medium } from "@expo-google-fonts/plus-jakarta-sans/500Medium";
+import { DMSans_500Medium } from "@expo-google-fonts/dm-sans/500Medium";
+import { DMSans_600SemiBold } from "@expo-google-fonts/dm-sans/600SemiBold";
 import { PlusJakartaSans_600SemiBold } from "@expo-google-fonts/plus-jakarta-sans/600SemiBold";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -17,9 +18,10 @@ export default function RootLayout() {
     );
 
     let [fontsLoaded] = useFonts({
-        PlusJakartaSans_600SemiBold,
-        PlusJakartaSans_500Medium,
-        DMSans_400Regular,
+        "PlusJakartaSans-SemiBold": PlusJakartaSans_600SemiBold,
+        "DMSans-Regular": DMSans_400Regular,
+        "DMSans-Medium": DMSans_500Medium,
+        "DMSans-SemiBold": DMSans_600SemiBold,
     });
 
     useEffect(() => {

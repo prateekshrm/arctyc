@@ -1,14 +1,22 @@
-import { StyleSheet, Text, View } from "react-native";
+import { usePreferencesStore } from "@/stores/preferences.store";
+import { StatusBar } from "expo-status-bar";
+import { Button, StyleSheet, Text, View } from "react-native";
 
-const Settings = () => {
+const Onboarding = () => {
+    const setOnboarded = usePreferencesStore((state) => state.setOnboarded);
     return (
         <View style={styles.container}>
-            <Text>Settings</Text>
+            <StatusBar style="dark" />
+            <Text>Onboarding</Text>
+            <Button
+                title="Set Onboarding False"
+                onPress={() => setOnboarded(false)}
+            />
         </View>
     );
 };
 
-export default Settings;
+export default Onboarding;
 
 const styles = StyleSheet.create({
     container: {
