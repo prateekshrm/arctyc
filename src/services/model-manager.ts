@@ -4,6 +4,7 @@ import { Directory, DownloadTask, File, Paths } from "expo-file-system";
 import { useModelStore } from "@/stores/models.store";
 
 const activeDownloadTasks = new Map<string, DownloadTask>();
+const cancelledDownloadIds = new Set<string>();
 let activeLanguageModel: ReturnType<typeof llama.languageModel> | null = null;
 
 export function getActiveLanguageModel() {
@@ -116,6 +117,8 @@ export async function downloadModel(id: string) {
         await cancelDownload(id);
     }
 
+    cancelledDownloadIds.delete(id);
+
     // Ensure any stale temp file is removed
     try {
         if (tempFile.exists) {
@@ -132,13 +135,28 @@ export async function downloadModel(id: string) {
     try {
         const url = `https://huggingface.co/${repo}/resolve/main/${filename}?download=true`;
 
+        let lastProgressTime = 0;
+        let lastProgressVal = 0;
+
         const task = new DownloadTask(url, tempFile, {
             onProgress: ({ bytesWritten, totalBytes }) => {
+                if (cancelledDownloadIds.has(id)) return;
                 const total = totalBytes > 0 ? totalBytes : model.sizeBytes;
                 const progress = Math.min(1, Math.max(0, bytesWritten / total));
-                useModelStore.getState().updateModel(id, {
-                    downloadProgress: progress,
-                });
+                const now = Date.now();
+
+                // Throttle progress events to prevent saturating JS event loop
+                if (
+                    now - lastProgressTime >= 150 ||
+                    progress - lastProgressVal >= 0.015 ||
+                    progress >= 0.999
+                ) {
+                    lastProgressTime = now;
+                    lastProgressVal = progress;
+                    useModelStore.getState().updateModel(id, {
+                        downloadProgress: progress,
+                    });
+                }
             },
         });
 
@@ -147,8 +165,25 @@ export async function downloadModel(id: string) {
         const resultFile = await task.downloadAsync();
         activeDownloadTasks.delete(id);
 
+        if (cancelledDownloadIds.has(id) || task.state === "cancelled") {
+            cancelledDownloadIds.delete(id);
+            setTimeout(() => {
+                try {
+                    if (tempFile.exists) {
+                        tempFile.delete();
+                    }
+                } catch {}
+            }, 100);
+            useModelStore.getState().updateModel(id, {
+                status: "available",
+                downloadProgress: undefined,
+                error: undefined,
+            });
+            return null;
+        }
+
         if (!resultFile || !tempFile.exists) {
-            throw new Error("Download was cancelled or produced no file.");
+            throw new Error("Download produced no file.");
         }
 
         // Verify the downloaded file
@@ -180,17 +215,36 @@ export async function downloadModel(id: string) {
     } catch (error) {
         activeDownloadTasks.delete(id);
 
-        // Clean up partial temp file so no corrupted files linger
-        try {
-            if (tempFile.exists) {
-                tempFile.delete();
-            }
-        } catch {}
+        const isCancelled =
+            cancelledDownloadIds.has(id) ||
+            (error instanceof Error && /cancel/i.test(error.message));
+
+        cancelledDownloadIds.delete(id);
+
+        // Clean up partial temp file asynchronously so native file locks don't block JS thread
+        setTimeout(() => {
+            try {
+                if (tempFile.exists) {
+                    tempFile.delete();
+                }
+            } catch {}
+        }, 100);
+
+        if (isCancelled) {
+            useModelStore.getState().updateModel(id, {
+                status: "available",
+                downloadProgress: undefined,
+                error: undefined,
+            });
+            return null;
+        }
 
         const message =
             error instanceof Error
                 ? error.message
                 : "Failed to download model.";
+
+        console.error("Failed to download model:", message);
 
         useModelStore.getState().updateModel(id, {
             status: "error",
@@ -203,28 +257,38 @@ export async function downloadModel(id: string) {
 }
 
 export async function cancelDownload(id: string) {
-    const task = activeDownloadTasks.get(id);
-    if (task) {
-        try {
-            task.cancel();
-        } catch {}
-        activeDownloadTasks.delete(id);
-    }
+    cancelledDownloadIds.add(id);
 
-    const model = getModelById(id);
-    const { tempFile } = getModelFiles(model.modelId);
-
-    try {
-        if (tempFile.exists) {
-            tempFile.delete();
-        }
-    } catch {}
-
+    // 1. Immediately reset store so UI responds instantaneously without lag
     useModelStore.getState().updateModel(id, {
         status: "available",
         downloadProgress: undefined,
         error: undefined,
     });
+
+    // 2. Abort native task
+    const task = activeDownloadTasks.get(id);
+    if (task) {
+        activeDownloadTasks.delete(id);
+        try {
+            task.cancel();
+        } catch {}
+    }
+
+    // 3. Clean up partial temp file with a brief delay to allow OS to release open stream handles
+    setTimeout(() => {
+        try {
+            const model = useModelStore
+                .getState()
+                .models.find((m) => m.id === id);
+            if (model) {
+                const { tempFile } = getModelFiles(model.modelId);
+                if (tempFile.exists) {
+                    tempFile.delete();
+                }
+            }
+        } catch {}
+    }, 150);
 }
 
 export async function deleteModel(id: string) {

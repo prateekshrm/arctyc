@@ -48,7 +48,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "qwen3-0.6b",
-        name: "Qwen3 0.6B",
+        name: "Qwen3 - 0.6B",
         provider: "Qwen",
         family: "qwen",
 
@@ -74,7 +74,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "qwen3-1.7b",
-        name: "Qwen3 1.7B",
+        name: "Qwen3 - 1.7B",
         provider: "Qwen",
         family: "qwen",
 
@@ -100,7 +100,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "qwen3-4b",
-        name: "Qwen3 4B",
+        name: "Qwen3 - 4B",
         provider: "Qwen",
         family: "qwen",
 
@@ -126,7 +126,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "qwen3-8b",
-        name: "Qwen3 8B",
+        name: "Qwen3 - 8B",
         provider: "Qwen",
         family: "qwen",
 
@@ -156,7 +156,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "llama-3.2-1b",
-        name: "Llama 3.2 1B",
+        name: "Llama 3.2 - 1B",
         provider: "Meta",
         family: "llama",
 
@@ -183,7 +183,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "llama-3.2-3b",
-        name: "Llama 3.2 3B",
+        name: "Llama 3.2 - 3B",
         provider: "Meta",
         family: "llama",
 
@@ -214,7 +214,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "gemma-3-1b",
-        name: "Gemma 3 1B",
+        name: "Gemma 3 - 1B",
         provider: "Google",
         family: "gemma",
 
@@ -240,7 +240,7 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
     {
         id: "gemma-3-4b",
-        name: "Gemma 3 4B",
+        name: "Gemma 3 - 4B",
         provider: "Google",
         family: "gemma",
 
