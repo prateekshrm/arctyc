@@ -1,5 +1,5 @@
-import { Colors, FontSizes } from "@constants/theme";
 import { getActiveLanguageModel } from "@/services/model-manager";
+import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
@@ -228,7 +228,7 @@ export default function Index() {
             >
                 <LinearGradient
                     style={styles.gradientMask}
-                    colors={["transparent", Colors.white]}
+                    colors={["transparent", Colors.surface]}
                     locations={[0, 0.2]}
                     pointerEvents="none"
                 />
@@ -237,7 +237,7 @@ export default function Index() {
                     <TextInput
                         multiline
                         placeholder="Ask anything"
-                        placeholderTextColor={Colors.muted}
+                        placeholderTextColor={Colors.textMuted}
                         value={value}
                         onChangeText={setValue}
                         textAlignVertical="top"
@@ -271,7 +271,11 @@ export default function Index() {
                             disabled={!value.trim() || thinking}
                             onPress={sendMessage}
                         >
-                            <ArrowUp size={20} color={Colors.white} strokeWidth={2.5} />
+                            <ArrowUp
+                                size={20}
+                                color={Colors.buttonPrimaryText}
+                                strokeWidth={2.5}
+                            />
                         </Pressable>
                     </View>
                 </View>
@@ -321,7 +325,7 @@ const styles = StyleSheet.create({
     },
 
     assistantMessage: {
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         borderBottomLeftRadius: 6,
     },
 
@@ -342,24 +346,24 @@ const styles = StyleSheet.create({
         width: 4,
         height: 4,
         borderRadius: 2,
-        backgroundColor: Colors.muted,
+        backgroundColor: Colors.textMuted,
     },
 
     thinkingText: {
         fontSize: FontSizes.sm,
         fontFamily: "DMSans-Regular",
-        color: Colors.muted,
+        color: Colors.textMuted,
     },
 
     messageText: {
         fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
         lineHeight: 23,
-        color: Colors.black,
+        color: Colors.text,
     },
 
     userMessageText: {
-        color: Colors.white,
+        color: Colors.textInverse,
     },
 
     inputArea: {
@@ -379,7 +383,7 @@ const styles = StyleSheet.create({
         width: "100%",
         minHeight: 96,
         padding: 12,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         borderRadius: 28,
     },
 
@@ -389,7 +393,7 @@ const styles = StyleSheet.create({
         fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
         lineHeight: 22,
-        color: Colors.black,
+        color: Colors.text,
         paddingTop: 0,
         paddingBottom: 0,
     },
@@ -413,7 +417,7 @@ const styles = StyleSheet.create({
         height: 38,
         paddingHorizontal: 14,
         borderRadius: 20,
-        backgroundColor: Colors.primary,
+        backgroundColor: Colors.buttonPrimary,
         alignItems: "center",
         justifyContent: "center",
     },

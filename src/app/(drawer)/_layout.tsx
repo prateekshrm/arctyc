@@ -7,11 +7,11 @@ export default function RootLayout() {
     return (
         <Drawer
             screenOptions={{
-                drawerActiveTintColor: Colors.black,
+                drawerActiveTintColor: Colors.text,
                 header: ({ options }) => <Header title={options.title ?? ""} />,
                 drawerLabelStyle: {
                     fontFamily: "PlusJakartaSans-SemiBold",
-                    fontSize: FontSizes.md,
+                    fontSize: FontSizes.sm,
                 },
             }}
         >

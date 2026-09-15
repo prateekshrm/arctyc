@@ -41,7 +41,7 @@ const Header = ({ title }: HeaderProps) => {
                 style={styles.pill}
                 onPress={() => (navigation as any).openDrawer()}
             >
-                <Icon name="menu-2-line" size={20} color={Colors.black} />
+                <Icon name="menu-2-line" size={20} color={Colors.text} />
             </Pressable>
 
             <Text style={styles.text}>{title}</Text>
@@ -64,14 +64,14 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     pill: {
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.buttonSecondary,
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 100,
     },
     text: {
         fontSize: FontSizes.xl,
-        color: Colors.black,
+        color: Colors.text,
         fontFamily: "PlusJakartaSans-SemiBold",
     },
 });

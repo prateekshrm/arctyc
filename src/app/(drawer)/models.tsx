@@ -95,7 +95,7 @@ export default function Models() {
                         <RemixIcon
                             name="hard-drive-2-line"
                             size={16}
-                            color={Colors.black}
+                            color={Colors.text}
                         />
                     </View>
                     <View>
@@ -113,7 +113,7 @@ export default function Models() {
                         <RemixIcon
                             name="dashboard-3-line"
                             size={16}
-                            color={Colors.black}
+                            color={Colors.text}
                         />
                     </View>
                     <View>
@@ -300,7 +300,9 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                                     }
                                     size={12}
                                     color={
-                                        isCurrentActive ? Colors.white : Colors.black
+                                        isCurrentActive
+                                            ? Colors.textInverse
+                                            : Colors.text
                                     }
                                 />
                                 <Text
@@ -407,7 +409,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                         <RemixIcon
                             name="close-line"
                             size={15}
-                            color={Colors.error}
+                            color={Colors.buttonDangerText}
                         />
                         <Text style={styles.cancelButtonText}>
                             Cancel Download
@@ -426,7 +428,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                                 <RemixIcon
                                     name="stop-circle-line"
                                     size={15}
-                                    color={Colors.black}
+                                    color={Colors.buttonSecondaryText}
                                 />
                                 <Text style={styles.loadButtonSecondaryText}>
                                     Unload from Memory
@@ -451,13 +453,13 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                                 {isCurrentLoading ? (
                                     <ActivityIndicator
                                         size="small"
-                                        color={Colors.black}
+                                        color={Colors.buttonSecondaryText}
                                     />
                                 ) : (
                                     <RemixIcon
                                         name="play-circle-line"
                                         size={15}
-                                        color={Colors.black}
+                                        color={Colors.buttonSecondaryText}
                                     />
                                 )}
                                 <Text style={styles.loadButtonSecondaryText}>
@@ -480,7 +482,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                             <RemixIcon
                                 name="delete-bin-line"
                                 size={16}
-                                color={Colors.error}
+                                color={Colors.buttonDangerText}
                             />
                         </Pressable>
                     </View>
@@ -495,7 +497,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                         <RemixIcon
                             name="download-2-line"
                             size={15}
-                            color={Colors.white}
+                            color={Colors.buttonPrimaryText}
                         />
                         <Text style={styles.downloadButtonText}>
                             {isError
@@ -532,7 +534,7 @@ const styles = StyleSheet.create({
     screenDescription: {
         fontFamily: "DMSans-Regular",
         fontSize: FontSizes.sm,
-        color: Colors.muted,
+        color: Colors.textSecondary,
         lineHeight: 20,
     },
 
@@ -554,7 +556,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 8,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         alignItems: "center",
         justifyContent: "center",
     },
@@ -562,13 +564,13 @@ const styles = StyleSheet.create({
     systemInfoLabel: {
         fontFamily: "DMSans-Medium",
         fontSize: FontSizes.xs,
-        color: Colors.muted,
+        color: Colors.textMuted,
     },
 
     systemInfoValue: {
         fontFamily: "PlusJakartaSans-SemiBold",
         fontSize: FontSizes.sm,
-        color: Colors.black,
+        color: Colors.text,
         marginTop: 1,
     },
 
@@ -589,25 +591,25 @@ const styles = StyleSheet.create({
         paddingVertical: 7,
         paddingHorizontal: 14,
         borderRadius: 999,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.surface,
         borderWidth: 1,
         borderColor: Colors.border,
     },
 
     filterChipActive: {
-        backgroundColor: Colors.primary,
-        borderColor: Colors.primary,
+        backgroundColor: Colors.buttonPrimary,
+        borderColor: Colors.buttonPrimary,
     },
 
     filterChipText: {
         fontFamily: "DMSans-Medium",
         fontSize: FontSizes.xs,
-        color: Colors.muted,
+        color: Colors.textSecondary,
     },
 
     filterChipTextActive: {
         fontFamily: "DMSans-SemiBold",
-        color: Colors.white,
+        color: Colors.textInverse,
     },
 
     section: {
@@ -621,14 +623,14 @@ const styles = StyleSheet.create({
     sectionTitleBig: {
         fontFamily: "PlusJakartaSans-SemiBold",
         fontSize: FontSizes.xl,
-        color: Colors.black,
+        color: Colors.text,
         letterSpacing: -0.4,
     },
 
     sectionDescription: {
         fontFamily: "DMSans-Regular",
         fontSize: FontSizes.sm,
-        color: Colors.muted,
+        color: Colors.textSecondary,
         marginTop: 3,
         lineHeight: 18,
     },
@@ -642,7 +644,7 @@ const styles = StyleSheet.create({
         borderRadius: 18,
         borderWidth: 1,
         borderColor: Colors.border,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.surface,
         shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
@@ -670,14 +672,14 @@ const styles = StyleSheet.create({
     modelName: {
         fontFamily: "PlusJakartaSans-SemiBold",
         fontSize: FontSizes.md,
-        color: Colors.black,
+        color: Colors.text,
         letterSpacing: -0.3,
     },
 
     providerText: {
         fontFamily: "DMSans-Medium",
         fontSize: FontSizes.xs,
-        color: Colors.muted,
+        color: Colors.textSecondary,
         marginTop: 2,
     },
 
@@ -688,7 +690,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 7,
         paddingVertical: 2.5,
         borderRadius: 6,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         borderWidth: 1,
         borderColor: Colors.border,
     },
@@ -696,16 +698,16 @@ const styles = StyleSheet.create({
     downloadedChipText: {
         fontFamily: "DMSans-SemiBold",
         fontSize: FontSizes.xs,
-        color: Colors.black,
+        color: Colors.text,
     },
 
     activeChip: {
-        backgroundColor: Colors.primary,
-        borderColor: Colors.primary,
+        backgroundColor: Colors.buttonPrimary,
+        borderColor: Colors.buttonPrimary,
     },
 
     activeChipText: {
-        color: Colors.white,
+        color: Colors.textInverse,
     },
 
     description: {
@@ -713,13 +715,13 @@ const styles = StyleSheet.create({
         fontFamily: "DMSans-Regular",
         fontSize: FontSizes.sm,
         lineHeight: 18,
-        color: Colors.muted,
+        color: Colors.textSecondary,
     },
 
     statsGrid: {
         marginTop: 12,
         borderRadius: 12,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSubtle,
         borderWidth: 1,
         borderColor: Colors.border,
         paddingVertical: 8,
@@ -752,7 +754,7 @@ const styles = StyleSheet.create({
     statLabel: {
         fontFamily: "DMSans-Medium",
         fontSize: FontSizes.xs,
-        color: Colors.muted,
+        color: Colors.textMuted,
         textTransform: "uppercase",
         letterSpacing: 0.2,
     },
@@ -760,7 +762,7 @@ const styles = StyleSheet.create({
     statValue: {
         fontFamily: "PlusJakartaSans-SemiBold",
         fontSize: FontSizes.xs,
-        color: Colors.black,
+        color: Colors.text,
         marginTop: 2,
     },
 
@@ -773,7 +775,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: Colors.errorSurface,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: Colors.errorBorder,
     },
 
     errorText: {
@@ -798,19 +800,19 @@ const styles = StyleSheet.create({
     progressStats: {
         fontFamily: "DMSans-Medium",
         fontSize: FontSizes.xs,
-        color: Colors.muted,
+        color: Colors.textSecondary,
     },
 
     progressPercentage: {
         fontFamily: "PlusJakartaSans-SemiBold",
         fontSize: FontSizes.xs,
-        color: Colors.black,
+        color: Colors.text,
     },
 
     progressBarTrack: {
         height: 6,
         borderRadius: 999,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         overflow: "hidden",
     },
 
@@ -829,7 +831,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        backgroundColor: Colors.primary,
+        backgroundColor: Colors.buttonPrimary,
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderRadius: 12,
@@ -837,7 +839,7 @@ const styles = StyleSheet.create({
 
     downloadButtonText: {
         fontFamily: "DMSans-SemiBold",
-        color: Colors.white,
+        color: Colors.buttonPrimaryText,
         fontSize: FontSizes.sm,
     },
 
@@ -846,9 +848,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 6,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.surface,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: Colors.buttonDangerBorder,
         paddingVertical: 10,
         paddingHorizontal: 16,
         borderRadius: 12,
@@ -856,7 +858,7 @@ const styles = StyleSheet.create({
 
     cancelButtonText: {
         fontFamily: "DMSans-SemiBold",
-        color: Colors.error,
+        color: Colors.buttonDangerText,
         fontSize: FontSizes.xs,
     },
 
@@ -872,7 +874,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.buttonSecondary,
         borderWidth: 1,
         borderColor: Colors.border,
         paddingVertical: 12,
@@ -886,7 +888,7 @@ const styles = StyleSheet.create({
 
     loadButtonSecondaryText: {
         fontFamily: "DMSans-SemiBold",
-        color: Colors.black,
+        color: Colors.buttonSecondaryText,
         fontSize: FontSizes.sm,
     },
 
@@ -894,9 +896,9 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 14,
         borderRadius: 12,
-        backgroundColor: Colors.errorSurface,
+        backgroundColor: Colors.buttonDanger,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: Colors.buttonDangerBorder,
         alignItems: "center",
         justifyContent: "center",
     },

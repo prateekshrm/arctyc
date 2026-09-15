@@ -1,5 +1,5 @@
-import { Colors, FontSizes } from "@constants/theme";
 import { usePreferencesStore } from "@/stores/preferences.store";
+import { Colors, FontSizes } from "@constants/theme";
 import { StatusBar } from "expo-status-bar";
 import { Button, StyleSheet, Text, View } from "react-native";
 
@@ -11,7 +11,7 @@ const Onboarding = () => {
             <Text style={styles.text}>Onboarding</Text>
             <Button
                 title="Set Onboarding False"
-                color={Colors.primary}
+                color={Colors.buttonPrimary}
                 onPress={() => setOnboarded(false)}
             />
         </View>
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: FontSizes.md,
-        color: Colors.black,
+        color: Colors.text,
         marginBottom: 12,
     },
 });

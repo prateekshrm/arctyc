@@ -1,5 +1,5 @@
-import { Colors, FontSizes } from "@constants/theme";
 import { usePreferencesStore } from "@/stores/preferences.store";
+import { Colors, FontSizes } from "@constants/theme";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -60,8 +60,8 @@ const Settings = () => {
                 <Text style={styles.appName}>Arctyc</Text>
 
                 <Text style={styles.description}>
-                    Your private AI assistant. Fast answers anywhere with zero
-                    data leaving your phone.
+                    Your private AI assistant. Chat with AI anywhere, without
+                    sending your data to the cloud.
                 </Text>
 
                 <View style={styles.steps}>
@@ -100,7 +100,7 @@ const Settings = () => {
                     <RemixIcon
                         name="arrow-right-s-line"
                         size={20}
-                        color={Colors.black}
+                        color={Colors.text}
                         fallback={null}
                     />
                 </Pressable>
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 
     appName: {
         fontSize: FontSizes.display,
-        color: Colors.white,
+        color: Colors.textInverse,
         marginBottom: 8,
         fontFamily: "PlusJakartaSans-SemiBold",
     },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
         fontSize: FontSizes.md,
         lineHeight: 20,
         fontFamily: "DMSans-SemiBold",
-        color: Colors.white,
+        color: Colors.textInverse,
         marginBottom: 2,
     },
 
@@ -218,6 +218,6 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: FontSizes.md,
         fontFamily: "DMSans-SemiBold",
-        color: Colors.black,
+        color: Colors.text,
     },
 });
