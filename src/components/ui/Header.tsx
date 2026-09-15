@@ -1,3 +1,4 @@
+import { Colors, FontSizes } from "@constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -40,7 +41,7 @@ const Header = ({ title }: HeaderProps) => {
                 style={styles.pill}
                 onPress={() => (navigation as any).openDrawer()}
             >
-                <Icon name="menu-2-line" size={20} />
+                <Icon name="menu-2-line" size={20} color={Colors.black} />
             </Pressable>
 
             <Text style={styles.text}>{title}</Text>
@@ -63,13 +64,14 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     pill: {
-        backgroundColor: "#e4e4e4",
+        backgroundColor: Colors.surface,
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 100,
     },
     text: {
-        fontSize: 20,
+        fontSize: FontSizes.xl,
+        color: Colors.black,
         fontFamily: "PlusJakartaSans-SemiBold",
     },
 });

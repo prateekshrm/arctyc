@@ -1,3 +1,4 @@
+import { Colors, FontSizes } from "@constants/theme";
 import { memo, useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
@@ -94,7 +95,7 @@ export default function Models() {
                         <RemixIcon
                             name="hard-drive-2-line"
                             size={16}
-                            color="#000000"
+                            color={Colors.black}
                         />
                     </View>
                     <View>
@@ -112,7 +113,7 @@ export default function Models() {
                         <RemixIcon
                             name="dashboard-3-line"
                             size={16}
-                            color="#000000"
+                            color={Colors.black}
                         />
                     </View>
                     <View>
@@ -299,7 +300,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                                     }
                                     size={12}
                                     color={
-                                        isCurrentActive ? "#ffffff" : "#000000"
+                                        isCurrentActive ? Colors.white : Colors.black
                                     }
                                 />
                                 <Text
@@ -361,7 +362,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                     <RemixIcon
                         name="error-warning-fill"
                         size={15}
-                        color="#dc2626"
+                        color={Colors.error}
                     />
                     <Text style={styles.errorText} numberOfLines={2}>
                         {modelState?.error}
@@ -406,7 +407,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                         <RemixIcon
                             name="close-line"
                             size={15}
-                            color="#dc2626"
+                            color={Colors.error}
                         />
                         <Text style={styles.cancelButtonText}>
                             Cancel Download
@@ -425,7 +426,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                                 <RemixIcon
                                     name="stop-circle-line"
                                     size={15}
-                                    color="#000000"
+                                    color={Colors.black}
                                 />
                                 <Text style={styles.loadButtonSecondaryText}>
                                     Unload from Memory
@@ -450,13 +451,13 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                                 {isCurrentLoading ? (
                                     <ActivityIndicator
                                         size="small"
-                                        color="#000000"
+                                        color={Colors.black}
                                     />
                                 ) : (
                                     <RemixIcon
                                         name="play-circle-line"
                                         size={15}
-                                        color="#000000"
+                                        color={Colors.black}
                                     />
                                 )}
                                 <Text style={styles.loadButtonSecondaryText}>
@@ -479,7 +480,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                             <RemixIcon
                                 name="delete-bin-line"
                                 size={16}
-                                color="#dc2626"
+                                color={Colors.error}
                             />
                         </Pressable>
                     </View>
@@ -494,7 +495,7 @@ const ModelCard = memo(({ model }: { model: Model }) => {
                         <RemixIcon
                             name="download-2-line"
                             size={15}
-                            color="#ffffff"
+                            color={Colors.white}
                         />
                         <Text style={styles.downloadButtonText}>
                             {isError
@@ -530,8 +531,8 @@ const styles = StyleSheet.create({
 
     screenDescription: {
         fontFamily: "DMSans-Regular",
-        fontSize: 14,
-        color: "#71717a",
+        fontSize: FontSizes.sm,
+        color: Colors.muted,
         lineHeight: 20,
     },
 
@@ -553,28 +554,28 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 8,
-        backgroundColor: "#e4e4e4",
+        backgroundColor: Colors.surface,
         alignItems: "center",
         justifyContent: "center",
     },
 
     systemInfoLabel: {
         fontFamily: "DMSans-Medium",
-        fontSize: 12,
-        color: "#a1a1aa",
+        fontSize: FontSizes.xs,
+        color: Colors.muted,
     },
 
     systemInfoValue: {
         fontFamily: "PlusJakartaSans-SemiBold",
-        fontSize: 14,
-        color: "#09090b",
+        fontSize: FontSizes.sm,
+        color: Colors.black,
         marginTop: 1,
     },
 
     systemInfoDivider: {
         width: 1,
         height: 26,
-        backgroundColor: "#e4e4e7",
+        backgroundColor: Colors.border,
         marginHorizontal: 14,
     },
 
@@ -588,25 +589,25 @@ const styles = StyleSheet.create({
         paddingVertical: 7,
         paddingHorizontal: 14,
         borderRadius: 999,
-        backgroundColor: "#ffffff",
+        backgroundColor: Colors.white,
         borderWidth: 1,
-        borderColor: "#e4e4e7",
+        borderColor: Colors.border,
     },
 
     filterChipActive: {
-        backgroundColor: "#000000",
-        borderColor: "#000000",
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
     },
 
     filterChipText: {
         fontFamily: "DMSans-Medium",
-        fontSize: 12.5,
-        color: "#71717a",
+        fontSize: FontSizes.xs,
+        color: Colors.muted,
     },
 
     filterChipTextActive: {
         fontFamily: "DMSans-SemiBold",
-        color: "#ffffff",
+        color: Colors.white,
     },
 
     section: {
@@ -619,15 +620,15 @@ const styles = StyleSheet.create({
 
     sectionTitleBig: {
         fontFamily: "PlusJakartaSans-SemiBold",
-        fontSize: 20,
-        color: "#09090b",
+        fontSize: FontSizes.xl,
+        color: Colors.black,
         letterSpacing: -0.4,
     },
 
     sectionDescription: {
         fontFamily: "DMSans-Regular",
-        fontSize: 14,
-        color: "#71717a",
+        fontSize: FontSizes.sm,
+        color: Colors.muted,
         marginTop: 3,
         lineHeight: 18,
     },
@@ -640,9 +641,9 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 18,
         borderWidth: 1,
-        borderColor: "#e4e4e7",
-        backgroundColor: "#ffffff",
-        shadowColor: "#000000",
+        borderColor: Colors.border,
+        backgroundColor: Colors.white,
+        shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
         shadowRadius: 8,
@@ -668,15 +669,15 @@ const styles = StyleSheet.create({
 
     modelName: {
         fontFamily: "PlusJakartaSans-SemiBold",
-        fontSize: 17,
-        color: "#09090b",
+        fontSize: FontSizes.md,
+        color: Colors.black,
         letterSpacing: -0.3,
     },
 
     providerText: {
         fontFamily: "DMSans-Medium",
-        fontSize: 12.5,
-        color: "#71717a",
+        fontSize: FontSizes.xs,
+        color: Colors.muted,
         marginTop: 2,
     },
 
@@ -687,40 +688,40 @@ const styles = StyleSheet.create({
         paddingHorizontal: 7,
         paddingVertical: 2.5,
         borderRadius: 6,
-        backgroundColor: "#f4f4f5",
+        backgroundColor: Colors.surface,
         borderWidth: 1,
-        borderColor: "#e4e4e7",
+        borderColor: Colors.border,
     },
 
     downloadedChipText: {
         fontFamily: "DMSans-SemiBold",
-        fontSize: 12,
-        color: "#000000",
+        fontSize: FontSizes.xs,
+        color: Colors.black,
     },
 
     activeChip: {
-        backgroundColor: "#000000",
-        borderColor: "#000000",
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
     },
 
     activeChipText: {
-        color: "#ffffff",
+        color: Colors.white,
     },
 
     description: {
         marginTop: 10,
         fontFamily: "DMSans-Regular",
-        fontSize: 14,
+        fontSize: FontSizes.sm,
         lineHeight: 18,
-        color: "#52525b",
+        color: Colors.muted,
     },
 
     statsGrid: {
         marginTop: 12,
         borderRadius: 12,
-        backgroundColor: "#fafafa",
+        backgroundColor: Colors.surface,
         borderWidth: 1,
-        borderColor: "#f4f4f5",
+        borderColor: Colors.border,
         paddingVertical: 8,
         paddingHorizontal: 12,
     },
@@ -738,28 +739,28 @@ const styles = StyleSheet.create({
     statCellDivider: {
         width: 1,
         height: 24,
-        backgroundColor: "#e4e4e7",
+        backgroundColor: Colors.border,
         marginHorizontal: 12,
     },
 
     statsRowDivider: {
         height: 1,
-        backgroundColor: "#f4f4f5",
+        backgroundColor: Colors.border,
         marginVertical: 4,
     },
 
     statLabel: {
         fontFamily: "DMSans-Medium",
-        fontSize: 10.5,
-        color: "#a1a1aa",
+        fontSize: FontSizes.xs,
+        color: Colors.muted,
         textTransform: "uppercase",
         letterSpacing: 0.2,
     },
 
     statValue: {
         fontFamily: "PlusJakartaSans-SemiBold",
-        fontSize: 12.5,
-        color: "#09090b",
+        fontSize: FontSizes.xs,
+        color: Colors.black,
         marginTop: 2,
     },
 
@@ -770,16 +771,16 @@ const styles = StyleSheet.create({
         marginTop: 12,
         padding: 9,
         borderRadius: 10,
-        backgroundColor: "#fef2f2",
+        backgroundColor: Colors.errorSurface,
         borderWidth: 1,
-        borderColor: "#fecaca",
+        borderColor: Colors.border,
     },
 
     errorText: {
         flex: 1,
         fontFamily: "DMSans-Medium",
-        fontSize: 12,
-        color: "#b91c1c",
+        fontSize: FontSizes.xs,
+        color: Colors.error,
         lineHeight: 15,
     },
 
@@ -796,27 +797,27 @@ const styles = StyleSheet.create({
 
     progressStats: {
         fontFamily: "DMSans-Medium",
-        fontSize: 12,
-        color: "#71717a",
+        fontSize: FontSizes.xs,
+        color: Colors.muted,
     },
 
     progressPercentage: {
         fontFamily: "PlusJakartaSans-SemiBold",
-        fontSize: 12,
-        color: "#000000",
+        fontSize: FontSizes.xs,
+        color: Colors.black,
     },
 
     progressBarTrack: {
         height: 6,
         borderRadius: 999,
-        backgroundColor: "#f4f4f5",
+        backgroundColor: Colors.surface,
         overflow: "hidden",
     },
 
     progressBarFill: {
         height: "100%",
         borderRadius: 999,
-        backgroundColor: "#000000",
+        backgroundColor: Colors.primary,
     },
 
     actionsContainer: {
@@ -828,7 +829,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        backgroundColor: "#000000",
+        backgroundColor: Colors.primary,
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderRadius: 12,
@@ -836,8 +837,8 @@ const styles = StyleSheet.create({
 
     downloadButtonText: {
         fontFamily: "DMSans-SemiBold",
-        color: "#ffffff",
-        fontSize: 14,
+        color: Colors.white,
+        fontSize: FontSizes.sm,
     },
 
     cancelButton: {
@@ -845,9 +846,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 6,
-        backgroundColor: "#ffffff",
+        backgroundColor: Colors.white,
         borderWidth: 1,
-        borderColor: "#fca5a5",
+        borderColor: Colors.border,
         paddingVertical: 10,
         paddingHorizontal: 16,
         borderRadius: 12,
@@ -855,8 +856,8 @@ const styles = StyleSheet.create({
 
     cancelButtonText: {
         fontFamily: "DMSans-SemiBold",
-        color: "#dc2626",
-        fontSize: 12.5,
+        color: Colors.error,
+        fontSize: FontSizes.xs,
     },
 
     downloadedActionsRow: {
@@ -871,31 +872,31 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        backgroundColor: "#f4f4f5",
+        backgroundColor: Colors.surface,
         borderWidth: 1,
-        borderColor: "#e4e4e7",
+        borderColor: Colors.border,
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderRadius: 12,
     },
 
     loadButtonLoading: {
-        backgroundColor: "#e4e4e7",
+        backgroundColor: Colors.border,
     },
 
     loadButtonSecondaryText: {
         fontFamily: "DMSans-SemiBold",
-        color: "#000000",
-        fontSize: 14,
+        color: Colors.black,
+        fontSize: FontSizes.sm,
     },
 
     deleteButton: {
         paddingVertical: 12,
         paddingHorizontal: 14,
         borderRadius: 12,
-        backgroundColor: "#fef2f2",
+        backgroundColor: Colors.errorSurface,
         borderWidth: 1,
-        borderColor: "#fecaca",
+        borderColor: Colors.border,
         alignItems: "center",
         justifyContent: "center",
     },

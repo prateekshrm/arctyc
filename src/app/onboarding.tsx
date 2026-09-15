@@ -1,3 +1,4 @@
+import { Colors, FontSizes } from "@constants/theme";
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -70,7 +71,7 @@ const Settings = () => {
                                 <RemixIcon
                                     name={step.icon as IconName}
                                     size={21}
-                                    color="#FFFFFF"
+                                    color={Colors.white}
                                     fallback={null}
                                 />
                             </View>
@@ -99,7 +100,7 @@ const Settings = () => {
                     <RemixIcon
                         name="arrow-right-s-line"
                         size={20}
-                        color="#000000"
+                        color={Colors.black}
                         fallback={null}
                     />
                 </Pressable>
@@ -113,7 +114,7 @@ export default Settings;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#000000",
+        backgroundColor: Colors.black,
     },
 
     imageContainer: {
@@ -144,14 +145,14 @@ const styles = StyleSheet.create({
     },
 
     appName: {
-        fontSize: 32,
-        color: "white",
+        fontSize: FontSizes.display,
+        color: Colors.white,
         marginBottom: 8,
         fontFamily: "PlusJakartaSans-SemiBold",
     },
 
     description: {
-        fontSize: 16,
+        fontSize: FontSizes.md,
         lineHeight: 24,
         fontFamily: "DMSans-Medium",
         color: "rgba(255, 255, 255, 0.85)",
@@ -184,15 +185,15 @@ const styles = StyleSheet.create({
     },
 
     stepTitle: {
-        fontSize: 15,
+        fontSize: FontSizes.md,
         lineHeight: 20,
         fontFamily: "DMSans-SemiBold",
-        color: "#FFFFFF",
+        color: Colors.white,
         marginBottom: 2,
     },
 
     stepDescription: {
-        fontSize: 13,
+        fontSize: FontSizes.sm,
         lineHeight: 18,
         fontFamily: "DMSans-Medium",
         color: "rgba(255, 255, 255, 0.7)",
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 56,
         borderRadius: 999,
-        backgroundColor: "white",
+        backgroundColor: Colors.white,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
@@ -215,8 +216,8 @@ const styles = StyleSheet.create({
     },
 
     buttonText: {
-        fontSize: 17,
+        fontSize: FontSizes.md,
         fontFamily: "DMSans-SemiBold",
-        color: "#000000",
+        color: Colors.black,
     },
 });

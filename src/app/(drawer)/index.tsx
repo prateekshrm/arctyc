@@ -1,3 +1,4 @@
+import { Colors, FontSizes } from "@constants/theme";
 import { getActiveLanguageModel } from "@/services/model-manager";
 import { streamText } from "ai";
 import { LinearGradient } from "expo-linear-gradient";
@@ -227,7 +228,7 @@ export default function Index() {
             >
                 <LinearGradient
                     style={styles.gradientMask}
-                    colors={["transparent", "white"]}
+                    colors={["transparent", Colors.white]}
                     locations={[0, 0.2]}
                     pointerEvents="none"
                 />
@@ -236,7 +237,7 @@ export default function Index() {
                     <TextInput
                         multiline
                         placeholder="Ask anything"
-                        placeholderTextColor="#222"
+                        placeholderTextColor={Colors.muted}
                         value={value}
                         onChangeText={setValue}
                         textAlignVertical="top"
@@ -270,7 +271,7 @@ export default function Index() {
                             disabled={!value.trim() || thinking}
                             onPress={sendMessage}
                         >
-                            <ArrowUp size={20} color="#fff" strokeWidth={2.5} />
+                            <ArrowUp size={20} color={Colors.white} strokeWidth={2.5} />
                         </Pressable>
                     </View>
                 </View>
@@ -282,7 +283,7 @@ export default function Index() {
 const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: Colors.white,
     },
 
     container: {
@@ -315,12 +316,12 @@ const styles = StyleSheet.create({
     },
 
     userMessage: {
-        backgroundColor: "black",
+        backgroundColor: Colors.primary,
         borderBottomRightRadius: 6,
     },
 
     assistantMessage: {
-        backgroundColor: "#F2F2F2",
+        backgroundColor: Colors.surface,
         borderBottomLeftRadius: 6,
     },
 
@@ -341,23 +342,24 @@ const styles = StyleSheet.create({
         width: 4,
         height: 4,
         borderRadius: 2,
-        backgroundColor: "#666",
+        backgroundColor: Colors.muted,
     },
 
     thinkingText: {
-        fontSize: 14,
+        fontSize: FontSizes.sm,
         fontFamily: "DMSans-Regular",
-        color: "#666",
+        color: Colors.muted,
     },
 
     messageText: {
-        fontSize: 16,
+        fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
         lineHeight: 23,
+        color: Colors.black,
     },
 
     userMessageText: {
-        color: "white",
+        color: Colors.white,
     },
 
     inputArea: {
@@ -377,17 +379,17 @@ const styles = StyleSheet.create({
         width: "100%",
         minHeight: 96,
         padding: 12,
-        backgroundColor: "#F2F2F2",
+        backgroundColor: Colors.surface,
         borderRadius: 28,
     },
 
     input: {
         width: "100%",
         minHeight: 24,
-        fontSize: 16,
+        fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
         lineHeight: 22,
-        color: "black",
+        color: Colors.black,
         paddingTop: 0,
         paddingBottom: 0,
     },
@@ -411,7 +413,7 @@ const styles = StyleSheet.create({
         height: 38,
         paddingHorizontal: 14,
         borderRadius: 20,
-        backgroundColor: "black",
+        backgroundColor: Colors.primary,
         alignItems: "center",
         justifyContent: "center",
     },

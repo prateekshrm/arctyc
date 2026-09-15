@@ -6,6 +6,9 @@
       "@/*": [
         "./src/*"
       ],
+      "@constants/*": [
+        "./src/constants/*"
+      ],
       "@/assets/*": [
         "./assets/*"
       ]

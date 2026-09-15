@@ -1,4 +1,5 @@
 import Header from "@/components/ui/Header";
+import { Colors, FontSizes } from "@constants/theme";
 import { Drawer } from "expo-router/drawer";
 import Icon from "react-native-remix-icon";
 
@@ -6,10 +7,11 @@ export default function RootLayout() {
     return (
         <Drawer
             screenOptions={{
-                drawerActiveTintColor: "black",
+                drawerActiveTintColor: Colors.black,
                 header: ({ options }) => <Header title={options.title ?? ""} />,
                 drawerLabelStyle: {
                     fontFamily: "PlusJakartaSans-SemiBold",
+                    fontSize: FontSizes.md,
                 },
             }}
         >
