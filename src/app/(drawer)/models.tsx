@@ -19,6 +19,7 @@ import {
     loadModel,
     unloadModel,
 } from "@/services/model-manager";
+import { useDialogStore } from "@/stores/dialog.store";
 import { Model, useModelStore } from "@/stores/models.store";
 import {
     DeviceCapabilities,
@@ -35,6 +36,8 @@ export default function Models() {
     );
     const models = useModelStore((state) => state.models);
     const [activeTab, setActiveTab] = useState<TabFilter>("all");
+
+    const showDialog = useDialogStore((state) => state.showDialog);
 
     useEffect(() => {
         const currentModels = useModelStore.getState().models;
@@ -117,10 +120,39 @@ export default function Models() {
                         />
                     </View>
                     <View>
-                        <Text style={styles.systemInfoLabel}>System RAM</Text>
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 4,
+                            }}
+                        >
+                            <Text style={styles.systemInfoLabel}>RAM</Text>
+                            <Pressable
+                                onPress={() =>
+                                    showDialog({
+                                        title: "About usable RAM",
+                                        message:
+                                            "The RAM shown here is the usable RAM reported by your device. It may be lower than the RAM advertised by the manufacturer because some memory is reserved for the system and hardware.",
+                                        confirmButton: {
+                                            label: "OK",
+                                        },
+                                    })
+                                }
+                                hitSlop={20}
+                                accessibilityRole="button"
+                                accessibilityLabel="Learn about usable RAM"
+                            >
+                                <RemixIcon
+                                    name="information-line"
+                                    size={FontSizes.xs}
+                                    color={Colors.textSecondary}
+                                />
+                            </Pressable>
+                        </View>
                         <Text style={styles.systemInfoValue}>
                             {device.totalRamGB !== null
-                                ? `${device.totalRamGB.toFixed(1)} GB Total`
+                                ? `${device.totalRamGB.toFixed(1)} GB Usable`
                                 : "Available"}
                         </Text>
                     </View>
@@ -184,7 +216,11 @@ export default function Models() {
 
                             <View style={styles.modelsGrid}>
                                 {recommendedModels.map((model) => (
-                                    <ModelCard key={model.id} model={model} />
+                                    <ModelCard
+                                        key={model.id}
+                                        model={model}
+                                        device={device}
+                                    />
                                 ))}
                             </View>
                         </View>
@@ -205,7 +241,11 @@ export default function Models() {
 
                         <View style={styles.modelsGrid}>
                             {otherModels.map((model) => (
-                                <ModelCard key={model.id} model={model} />
+                                <ModelCard
+                                    key={model.id}
+                                    model={model}
+                                    device={device}
+                                />
                             ))}
                         </View>
                     </View>
@@ -224,7 +264,11 @@ export default function Models() {
 
                     <View style={styles.modelsGrid}>
                         {installedModels.map((model) => (
-                            <ModelCard key={model.id} model={model} />
+                            <ModelCard
+                                key={model.id}
+                                model={model}
+                                device={device}
+                            />
                         ))}
                     </View>
                 </View>
@@ -233,283 +277,373 @@ export default function Models() {
     );
 }
 
-const ModelCard = memo(({ model }: { model: Model }) => {
-    const modelState = useModelStore((state) =>
-        state.models.find((m) => m.id === model.id),
-    );
-    const activeModelId = useModelStore((state) => state.activeModelId);
-    const isModelLoading = useModelStore((state) => state.isModelLoading);
+const ModelCard = memo(
+    ({ model, device }: { model: Model; device: DeviceCapabilities }) => {
+        const modelState = useModelStore((state) =>
+            state.models.find((m) => m.id === model.id),
+        );
 
-    const status = modelState?.status ?? "available";
-    const progress = modelState?.downloadProgress ?? 0;
-    const progressPercent = Math.round(progress * 100);
+        const activeModelId = useModelStore((state) => state.activeModelId);
 
-    const [isLocalLoading, setIsLocalLoading] = useState(false);
+        const isModelLoading = useModelStore((state) => state.isModelLoading);
 
-    const handleDownload = () => {
-        downloadModel(model.id).catch(() => {});
-    };
+        const showDialog = useDialogStore((state) => state.showDialog);
 
-    const handleCancel = () => {
-        cancelDownload(model.id).catch(() => {});
-    };
+        const status = modelState?.status ?? "available";
+        const progress = modelState?.downloadProgress ?? 0;
+        const progressPercent = Math.round(progress * 100);
 
-    const handleDelete = () => {
-        deleteModel(model.id).catch(() => {});
-    };
+        const [isLocalLoading, setIsLocalLoading] = useState(false);
 
-    const handleLoad = async () => {
-        setIsLocalLoading(true);
-        try {
-            await loadModel(model.id);
-        } catch {
-        } finally {
-            setIsLocalLoading(false);
-        }
-    };
+        const handleDownload = () => {
+            const modelSizeGB = model.sizeBytes / 1024 ** 3;
 
-    const handleUnload = () => {
-        unloadModel(model.id).catch(() => {});
-    };
+            if (device.freeStorageGB < modelSizeGB) {
+                showDialog({
+                    title: "Not enough storage",
+                    message: `This model requires ${formatBytes(
+                        model.sizeBytes,
+                    )} of storage, but your device doesn't have enough free space. Free up some storage and try again.`,
+                    confirmButton: {
+                        label: "OK",
+                    },
+                });
 
-    const isDownloading = status === "downloading";
-    const isCurrentActive = activeModelId === model.id && status === "loaded";
-    const isCurrentLoading = status === "loading" || isLocalLoading;
-    const isDownloaded =
-        status === "downloaded" || isCurrentActive || isCurrentLoading;
-    const isError = status === "error";
+                return;
+            }
+            if (
+                device.totalRamGB !== null &&
+                model.requirements.minimumRamGB > device.totalRamGB
+            ) {
+                showDialog({
+                    title: "Model may not run well",
+                    message: `This model requires at least ${
+                        model.requirements.minimumRamGB
+                    } GB of RAM, while your device has ${
+                        device.totalRamGB
+                    } GB of usable RAM. It may fail to load or make the app unstable while running.`,
+                    confirmButton: {
+                        label: "Download Anyway",
+                        variant: "destructive",
+                        onPress: () => {
+                            downloadModel(model.id).catch(() => {});
+                        },
+                    },
+                    dismissButton: {
+                        label: "Cancel",
+                    },
+                });
 
-    return (
-        <View style={styles.card}>
-            <View style={styles.cardHeader}>
-                <View style={styles.cardTitleCol}>
-                    <View style={styles.nameRow}>
-                        <Text style={styles.modelName}>{model.name}</Text>
-                        {isDownloaded && (
-                            <View
-                                style={[
-                                    styles.downloadedChip,
-                                    isCurrentActive && styles.activeChip,
-                                ]}
-                            >
-                                <RemixIcon
-                                    name={
-                                        isCurrentActive
-                                            ? "cpu-fill"
-                                            : "checkbox-circle-fill"
-                                    }
-                                    size={12}
-                                    color={
-                                        isCurrentActive
-                                            ? Colors.textInverse
-                                            : Colors.text
-                                    }
-                                />
-                                <Text
+                return;
+            }
+
+            downloadModel(model.id).catch(() => {});
+        };
+
+        const handleCancel = () => {
+            cancelDownload(model.id).catch(() => {});
+        };
+
+        const handleDelete = () => {
+            deleteModel(model.id).catch(() => {});
+        };
+
+        const handleLoad = async () => {
+            setIsLocalLoading(true);
+
+            try {
+                await loadModel(model.id);
+            } catch {
+                // Error is handled by the model store/service.
+            } finally {
+                setIsLocalLoading(false);
+            }
+        };
+
+        const handleUnload = () => {
+            unloadModel(model.id).catch(() => {});
+        };
+
+        const isDownloading = status === "downloading";
+
+        const isCurrentActive =
+            activeModelId === model.id && status === "loaded";
+
+        const isCurrentLoading = status === "loading" || isLocalLoading;
+
+        const isDownloaded =
+            status === "downloaded" || isCurrentActive || isCurrentLoading;
+
+        const isError = status === "error";
+
+        return (
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <View style={styles.cardTitleCol}>
+                        <View style={styles.nameRow}>
+                            <Text style={styles.modelName}>{model.name}</Text>
+
+                            {isDownloaded && (
+                                <View
                                     style={[
-                                        styles.downloadedChipText,
-                                        isCurrentActive &&
-                                            styles.activeChipText,
+                                        styles.downloadedChip,
+                                        isCurrentActive && styles.activeChip,
                                     ]}
                                 >
-                                    {isCurrentActive ? "Active" : "Downloaded"}
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-                    <Text style={styles.providerText}>{model.provider}</Text>
-                </View>
-            </View>
-
-            <Text style={styles.description}>{model.description}</Text>
-
-            <View style={styles.statsGrid}>
-                <View style={styles.statsRow}>
-                    <View style={styles.statCell}>
-                        <Text style={styles.statLabel}>Parameters</Text>
-                        <Text style={styles.statValue}>
-                            {model.parameterCount}
-                        </Text>
-                    </View>
-                    <View style={styles.statCellDivider} />
-                    <View style={styles.statCell}>
-                        <Text style={styles.statLabel}>Quantization</Text>
-                        <Text style={styles.statValue}>
-                            {model.quantization}
-                        </Text>
-                    </View>
-                </View>
-
-                <View style={styles.statsRowDivider} />
-
-                <View style={styles.statsRow}>
-                    <View style={styles.statCell}>
-                        <Text style={styles.statLabel}>Download Size</Text>
-                        <Text style={styles.statValue}>
-                            {formatBytes(model.sizeBytes)}
-                        </Text>
-                    </View>
-                    <View style={styles.statCellDivider} />
-                    <View style={styles.statCell}>
-                        <Text style={styles.statLabel}>Required RAM</Text>
-                        <Text style={styles.statValue}>
-                            {model.requirements.minimumRamGB} GB
-                        </Text>
-                    </View>
-                </View>
-            </View>
-
-            {Boolean(modelState?.error) && (
-                <View style={styles.errorBox}>
-                    <RemixIcon
-                        name="error-warning-fill"
-                        size={15}
-                        color={Colors.error}
-                    />
-                    <Text style={styles.errorText} numberOfLines={2}>
-                        {modelState?.error}
-                    </Text>
-                </View>
-            )}
-
-            {isDownloading && (
-                <View style={styles.progressContainer}>
-                    <View style={styles.progressLabelRow}>
-                        <Text style={styles.progressStats}>
-                            {formatBytes(model.sizeBytes * progress)} /{" "}
-                            {formatBytes(model.sizeBytes)}
-                        </Text>
-                        <Text style={styles.progressPercentage}>
-                            {progressPercent}%
-                        </Text>
-                    </View>
-                    <View style={styles.progressBarTrack}>
-                        <View
-                            style={[
-                                styles.progressBarFill,
-                                {
-                                    width: `${Math.min(100, Math.max(2, progressPercent))}%`,
-                                },
-                            ]}
-                        />
-                    </View>
-                </View>
-            )}
-
-            <View style={styles.actionsContainer}>
-                {isDownloading ? (
-                    <Pressable
-                        onPress={handleCancel}
-                        hitSlop={8}
-                        style={({ pressed }) => [
-                            styles.cancelButton,
-                            pressed && styles.buttonPressed,
-                        ]}
-                    >
-                        <RemixIcon
-                            name="close-line"
-                            size={15}
-                            color={Colors.buttonDangerText}
-                        />
-                        <Text style={styles.cancelButtonText}>
-                            Cancel Download
-                        </Text>
-                    </Pressable>
-                ) : isDownloaded ? (
-                    <View style={styles.downloadedActionsRow}>
-                        {isCurrentActive ? (
-                            <Pressable
-                                onPress={handleUnload}
-                                style={({ pressed }) => [
-                                    styles.loadButtonSecondary,
-                                    pressed && styles.buttonPressed,
-                                ]}
-                            >
-                                <RemixIcon
-                                    name="stop-circle-line"
-                                    size={15}
-                                    color={Colors.buttonSecondaryText}
-                                />
-                                <Text style={styles.loadButtonSecondaryText}>
-                                    Unload from Memory
-                                </Text>
-                            </Pressable>
-                        ) : (
-                            <Pressable
-                                onPress={handleLoad}
-                                disabled={isModelLoading || isCurrentLoading}
-                                style={({ pressed }) => [
-                                    styles.loadButtonSecondary,
-                                    isCurrentLoading &&
-                                        styles.loadButtonLoading,
-                                    pressed &&
-                                        !isCurrentLoading &&
-                                        styles.buttonPressed,
-                                    isModelLoading &&
-                                        !isCurrentLoading &&
-                                        styles.buttonDisabled,
-                                ]}
-                            >
-                                {isCurrentLoading ? (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color={Colors.buttonSecondaryText}
-                                    />
-                                ) : (
                                     <RemixIcon
-                                        name="play-circle-line"
-                                        size={15}
-                                        color={Colors.buttonSecondaryText}
+                                        name={
+                                            isCurrentActive
+                                                ? "cpu-fill"
+                                                : "checkbox-circle-fill"
+                                        }
+                                        size={12}
+                                        color={
+                                            isCurrentActive
+                                                ? Colors.textInverse
+                                                : Colors.text
+                                        }
                                     />
-                                )}
-                                <Text style={styles.loadButtonSecondaryText}>
-                                    {isCurrentLoading
-                                        ? "Loading into Memory..."
-                                        : "Load into Memory"}
-                                </Text>
-                            </Pressable>
-                        )}
 
+                                    <Text
+                                        style={[
+                                            styles.downloadedChipText,
+                                            isCurrentActive &&
+                                                styles.activeChipText,
+                                        ]}
+                                    >
+                                        {isCurrentActive
+                                            ? "Active"
+                                            : "Downloaded"}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+
+                        <Text style={styles.providerText}>
+                            {model.provider}
+                        </Text>
+                    </View>
+                </View>
+
+                <Text style={styles.description}>{model.description}</Text>
+
+                <View style={styles.statsGrid}>
+                    <View style={styles.statsRow}>
+                        <View style={styles.statCell}>
+                            <Text style={styles.statLabel}>Parameters</Text>
+
+                            <Text style={styles.statValue}>
+                                {model.parameterCount}
+                            </Text>
+                        </View>
+
+                        <View style={styles.statCellDivider} />
+
+                        <View style={styles.statCell}>
+                            <Text style={styles.statLabel}>Download Size</Text>
+
+                            <Text style={styles.statValue}>
+                                {formatBytes(model.sizeBytes)}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.statsRowDivider} />
+
+                    <View style={styles.statsRow}>
+                        <View style={styles.statCell}>
+                            <Text style={styles.statLabel}>Minimum RAM</Text>
+
+                            <Text style={styles.statValue}>
+                                {model.requirements.minimumRamGB} GB
+                            </Text>
+                        </View>
+                        <View style={styles.statCellDivider} />
+                        <View style={styles.statCell}>
+                            <Text style={styles.statLabel}>
+                                Recommended RAM
+                            </Text>
+
+                            <Text style={styles.statValue}>
+                                {model.requirements.recommendedRamGB} GB
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Error */}
+                {Boolean(modelState?.error) && (
+                    <View style={styles.errorBox}>
+                        <RemixIcon
+                            name="error-warning-fill"
+                            size={15}
+                            color={Colors.error}
+                        />
+
+                        <Text style={styles.errorText} numberOfLines={2}>
+                            {modelState?.error}
+                        </Text>
+                    </View>
+                )}
+
+                {/* Download Progress */}
+                {isDownloading && (
+                    <View style={styles.progressContainer}>
+                        <View style={styles.progressLabelRow}>
+                            <Text style={styles.progressStats}>
+                                {formatBytes(model.sizeBytes * progress)} /{" "}
+                                {formatBytes(model.sizeBytes)}
+                            </Text>
+
+                            <Text style={styles.progressPercentage}>
+                                {progressPercent}%
+                            </Text>
+                        </View>
+
+                        <View style={styles.progressBarTrack}>
+                            <View
+                                style={[
+                                    styles.progressBarFill,
+                                    {
+                                        width: `${Math.min(
+                                            100,
+                                            Math.max(2, progressPercent),
+                                        )}%`,
+                                    },
+                                ]}
+                            />
+                        </View>
+                    </View>
+                )}
+
+                {/* Actions */}
+                <View style={styles.actionsContainer}>
+                    {isDownloading ? (
                         <Pressable
-                            onPress={handleDelete}
-                            disabled={isCurrentLoading}
+                            onPress={handleCancel}
+                            hitSlop={8}
                             style={({ pressed }) => [
-                                styles.deleteButton,
+                                styles.cancelButton,
                                 pressed && styles.buttonPressed,
-                                isCurrentLoading && styles.buttonDisabled,
                             ]}
                         >
                             <RemixIcon
-                                name="delete-bin-line"
-                                size={16}
+                                name="close-line"
+                                size={15}
                                 color={Colors.buttonDangerText}
                             />
+
+                            <Text style={styles.cancelButtonText}>
+                                Cancel Download
+                            </Text>
                         </Pressable>
-                    </View>
-                ) : (
-                    <Pressable
-                        onPress={handleDownload}
-                        style={({ pressed }) => [
-                            styles.downloadButton,
-                            pressed && styles.buttonPressed,
-                        ]}
-                    >
-                        <RemixIcon
-                            name="download-2-line"
-                            size={15}
-                            color={Colors.buttonPrimaryText}
-                        />
-                        <Text style={styles.downloadButtonText}>
-                            {isError
-                                ? "Retry Download"
-                                : `Download (${formatBytes(model.sizeBytes)})`}
-                        </Text>
-                    </Pressable>
-                )}
+                    ) : isDownloaded ? (
+                        <View style={styles.downloadedActionsRow}>
+                            {isCurrentActive ? (
+                                <Pressable
+                                    onPress={handleUnload}
+                                    style={({ pressed }) => [
+                                        styles.loadButtonSecondary,
+                                        pressed && styles.buttonPressed,
+                                    ]}
+                                >
+                                    <RemixIcon
+                                        name="stop-circle-line"
+                                        size={15}
+                                        color={Colors.buttonSecondaryText}
+                                    />
+
+                                    <Text
+                                        style={styles.loadButtonSecondaryText}
+                                    >
+                                        Unload from Memory
+                                    </Text>
+                                </Pressable>
+                            ) : (
+                                <Pressable
+                                    onPress={handleLoad}
+                                    disabled={
+                                        isModelLoading || isCurrentLoading
+                                    }
+                                    style={({ pressed }) => [
+                                        styles.loadButtonSecondary,
+                                        isCurrentLoading &&
+                                            styles.loadButtonLoading,
+                                        pressed &&
+                                            !isCurrentLoading &&
+                                            styles.buttonPressed,
+                                        isModelLoading &&
+                                            !isCurrentLoading &&
+                                            styles.buttonDisabled,
+                                    ]}
+                                >
+                                    {isCurrentLoading ? (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color={Colors.buttonSecondaryText}
+                                        />
+                                    ) : (
+                                        <RemixIcon
+                                            name="play-circle-line"
+                                            size={15}
+                                            color={Colors.buttonSecondaryText}
+                                        />
+                                    )}
+
+                                    <Text
+                                        style={styles.loadButtonSecondaryText}
+                                    >
+                                        {isCurrentLoading
+                                            ? "Loading into Memory..."
+                                            : "Load into Memory"}
+                                    </Text>
+                                </Pressable>
+                            )}
+
+                            <Pressable
+                                onPress={handleDelete}
+                                disabled={isCurrentLoading}
+                                style={({ pressed }) => [
+                                    styles.deleteButton,
+                                    pressed && styles.buttonPressed,
+                                    isCurrentLoading && styles.buttonDisabled,
+                                ]}
+                            >
+                                <RemixIcon
+                                    name="delete-bin-line"
+                                    size={16}
+                                    color={Colors.buttonDangerText}
+                                />
+                            </Pressable>
+                        </View>
+                    ) : (
+                        <Pressable
+                            onPress={handleDownload}
+                            style={({ pressed }) => [
+                                styles.downloadButton,
+                                pressed && styles.buttonPressed,
+                            ]}
+                        >
+                            <RemixIcon
+                                name="download-2-line"
+                                size={15}
+                                color={Colors.buttonPrimaryText}
+                            />
+
+                            <Text style={styles.downloadButtonText}>
+                                {isError
+                                    ? "Retry Download"
+                                    : `Download (${formatBytes(
+                                          model.sizeBytes,
+                                      )})`}
+                            </Text>
+                        </Pressable>
+                    )}
+                </View>
             </View>
-        </View>
-    );
-});
+        );
+    },
+);
 
 const formatBytes = (bytes: number) => {
     const GB = 1024 ** 3;
@@ -556,7 +690,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 8,
-        backgroundColor: Colors.surfaceSecondary,
+        backgroundColor: Colors.surface,
         alignItems: "center",
         justifyContent: "center",
     },
@@ -564,7 +698,7 @@ const styles = StyleSheet.create({
     systemInfoLabel: {
         fontFamily: "DMSans-Medium",
         fontSize: FontSizes.xs,
-        color: Colors.textMuted,
+        color: Colors.textSecondary,
     },
 
     systemInfoValue: {

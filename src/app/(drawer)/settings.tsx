@@ -1,3 +1,4 @@
+import Dialog from "@/components/ui/Dialog";
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { StatusBar } from "expo-status-bar";
@@ -14,6 +15,7 @@ const Onboarding = () => {
                 color={Colors.buttonPrimary}
                 onPress={() => setOnboarded(false)}
             />
+            <Dialog />
         </View>
     );
 };
