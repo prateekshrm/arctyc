@@ -3,7 +3,6 @@ import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { ArrowUp } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
     KeyboardAvoidingView,
@@ -15,6 +14,7 @@ import {
     TextInput,
     View,
 } from "react-native";
+import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Message = {
@@ -169,27 +169,20 @@ export default function Index() {
                             ]}
                         >
                             <View
-                                style={[
-                                    styles.message,
+                                style={
                                     isUser
                                         ? styles.userMessage
-                                        : styles.assistantMessage,
-                                ]}
+                                        : styles.assistantMessage
+                                }
                             >
-                                {isUser ? (
-                                    <Text
-                                        style={[
-                                            styles.messageText,
-                                            styles.userMessageText,
-                                        ]}
-                                    >
-                                        {message.content}
-                                    </Text>
-                                ) : (
-                                    <Text style={styles.messageText}>
-                                        {message.content}
-                                    </Text>
-                                )}
+                                <Text
+                                    style={[
+                                        styles.messageText,
+                                        isUser && styles.userMessageText,
+                                    ]}
+                                >
+                                    {message.content}
+                                </Text>
                             </View>
                         </View>
                     );
@@ -199,13 +192,7 @@ export default function Index() {
                     <View
                         style={[styles.messageRow, styles.assistantMessageRow]}
                     >
-                        <View
-                            style={[
-                                styles.message,
-                                styles.assistantMessage,
-                                styles.thinkingMessage,
-                            ]}
-                        >
+                        <View style={styles.thinkingMessage}>
                             <View style={styles.thinkingDots}>
                                 <View style={styles.thinkingDot} />
                                 <View style={styles.thinkingDot} />
@@ -271,10 +258,10 @@ export default function Index() {
                             disabled={!value.trim() || thinking}
                             onPress={sendMessage}
                         >
-                            <ArrowUp
-                                size={20}
+                            <RemixIcon
+                                name="arrow-up-line"
+                                size={FontSizes.xl}
                                 color={Colors.buttonPrimaryText}
-                                strokeWidth={2.5}
                             />
                         </Pressable>
                     </View>
@@ -301,7 +288,7 @@ const styles = StyleSheet.create({
 
     messageRow: {
         width: "100%",
-        marginBottom: 18,
+        marginBottom: 24,
     },
 
     userMessageRow: {
@@ -309,24 +296,20 @@ const styles = StyleSheet.create({
     },
 
     assistantMessageRow: {
-        alignItems: "flex-start",
+        alignItems: "stretch",
     },
 
-    message: {
+    userMessage: {
         maxWidth: "85%",
         paddingHorizontal: 16,
         paddingVertical: 11,
         borderRadius: 20,
-    },
-
-    userMessage: {
         backgroundColor: Colors.primary,
         borderBottomRightRadius: 6,
     },
 
     assistantMessage: {
-        backgroundColor: Colors.surfaceSecondary,
-        borderBottomLeftRadius: 6,
+        width: "100%",
     },
 
     thinkingMessage: {

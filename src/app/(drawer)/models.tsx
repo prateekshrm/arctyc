@@ -97,7 +97,7 @@ export default function Models() {
                     <View style={styles.systemIconWrapper}>
                         <RemixIcon
                             name="hard-drive-2-line"
-                            size={16}
+                            size={FontSizes.md}
                             color={Colors.text}
                         />
                     </View>
@@ -115,7 +115,7 @@ export default function Models() {
                     <View style={styles.systemIconWrapper}>
                         <RemixIcon
                             name="dashboard-3-line"
-                            size={16}
+                            size={FontSizes.md}
                             color={Colors.text}
                         />
                     </View>
@@ -396,7 +396,7 @@ const ModelCard = memo(
                                                 ? "cpu-fill"
                                                 : "checkbox-circle-fill"
                                         }
-                                        size={12}
+                                        size={FontSizes.xs}
                                         color={
                                             isCurrentActive
                                                 ? Colors.textInverse
@@ -476,7 +476,7 @@ const ModelCard = memo(
                     <View style={styles.errorBox}>
                         <RemixIcon
                             name="error-warning-fill"
-                            size={15}
+                            size={FontSizes.md}
                             color={Colors.error}
                         />
 
@@ -529,7 +529,7 @@ const ModelCard = memo(
                         >
                             <RemixIcon
                                 name="close-line"
-                                size={15}
+                                size={FontSizes.md}
                                 color={Colors.buttonDangerText}
                             />
 
@@ -549,7 +549,7 @@ const ModelCard = memo(
                                 >
                                     <RemixIcon
                                         name="stop-circle-line"
-                                        size={15}
+                                        size={FontSizes.md}
                                         color={Colors.buttonSecondaryText}
                                     />
 
@@ -585,7 +585,7 @@ const ModelCard = memo(
                                     ) : (
                                         <RemixIcon
                                             name="play-circle-line"
-                                            size={15}
+                                            size={FontSizes.md}
                                             color={Colors.buttonSecondaryText}
                                         />
                                     )}
@@ -611,7 +611,7 @@ const ModelCard = memo(
                             >
                                 <RemixIcon
                                     name="delete-bin-line"
-                                    size={16}
+                                    size={FontSizes.md}
                                     color={Colors.buttonDangerText}
                                 />
                             </Pressable>
@@ -626,7 +626,7 @@ const ModelCard = memo(
                         >
                             <RemixIcon
                                 name="download-2-line"
-                                size={15}
+                                size={FontSizes.md}
                                 color={Colors.buttonPrimaryText}
                             />
 
