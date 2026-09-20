@@ -1,3 +1,4 @@
+import Markdown from "@/components/ui/Markdown";
 import { getActiveLanguageModel } from "@/services/model-manager";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
@@ -241,7 +242,13 @@ export default function Index() {
                                                       styles.userMessageText,
                                               ]}
                                           >
-                                              {message.content}
+                                              {isUser ? (
+                                                  message.content
+                                              ) : (
+                                                  <Markdown
+                                                      markdown={message.content}
+                                                  />
+                                              )}
                                           </Text>
                                       </View>
                                   </View>
