@@ -345,7 +345,20 @@ const ModelCard = memo(
         };
 
         const handleDelete = () => {
-            deleteModel(model.id).catch(() => {});
+            showDialog({
+                title: "Delete model?",
+                message: `Are you sure you want to delete ${model.name}? This will remove the model from your device. You can download it again later if needed.`,
+                confirmButton: {
+                    label: "Delete Model",
+                    variant: "destructive",
+                    onPress: () => {
+                        deleteModel(model.id).catch(() => {});
+                    },
+                },
+                dismissButton: {
+                    label: "Cancel",
+                },
+            });
         };
 
         const handleLoad = async () => {
