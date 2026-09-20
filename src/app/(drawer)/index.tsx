@@ -1,7 +1,9 @@
 import { getActiveLanguageModel } from "@/services/model-manager";
+import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -25,6 +27,9 @@ type Message = {
 
 export default function Index() {
     const insets = useSafeAreaInsets();
+    const router = useRouter();
+
+    const activeModel = useModelStore((state) => state.activeModelId);
 
     const [value, setValue] = useState("");
     const [inputHeight, setInputHeight] = useState(24);
@@ -131,6 +136,57 @@ export default function Index() {
         }
     };
 
+    const openModels = () => {
+        router.push("/models");
+    };
+
+    const renderNoModelState = () => {
+        return (
+            <View style={styles.emptyStateContainer}>
+                <View style={styles.emptyStateIcon}>
+                    <RemixIcon
+                        name="cpu-line"
+                        size={FontSizes.xxl}
+                        color={Colors.text}
+                    />
+                </View>
+
+                <Text style={styles.emptyStateTitle}>
+                    Choose a model to start
+                </Text>
+
+                <Text style={styles.emptyStateDescription}>
+                    Browse the available models and choose one to start
+                    chatting.
+                </Text>
+
+                <Pressable style={styles.modelsButton} onPress={openModels}>
+                    <Text style={styles.modelsButtonText}>Browse Models</Text>
+                </Pressable>
+            </View>
+        );
+    };
+
+    const renderEmptyChatState = () => {
+        return (
+            <View style={styles.emptyStateContainer}>
+                <View style={styles.emptyStateIcon}>
+                    <RemixIcon
+                        name="sparkling-2-line"
+                        size={FontSizes.xxl}
+                        color={Colors.text}
+                    />
+                </View>
+
+                <Text style={styles.emptyStateTitle}>Start a conversation</Text>
+
+                <Text style={styles.emptyStateDescription}>
+                    Write something below and your local AI will respond.
+                </Text>
+            </View>
+        );
+    };
+
     return (
         <KeyboardAvoidingView
             style={styles.mainContainer}
@@ -138,72 +194,84 @@ export default function Index() {
         >
             <StatusBar style="dark" />
 
-            <ScrollView
-                ref={scrollViewRef}
-                style={styles.container}
-                contentContainerStyle={[
-                    styles.contentContainer,
-                    {
-                        paddingTop: insets.top + 70,
-                        paddingBottom: insets.bottom + 200,
-                    },
-                ]}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-            >
-                {messages.map((message) => {
-                    const isUser = message.role === "user";
+            {activeModel ? (
+                <ScrollView
+                    ref={scrollViewRef}
+                    style={styles.container}
+                    contentContainerStyle={[
+                        styles.contentContainer,
+                        {
+                            paddingTop: insets.top + 70,
+                            paddingBottom: insets.bottom + 200,
+                        },
+                    ]}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    {messages.length === 0 && !thinking
+                        ? renderEmptyChatState()
+                        : messages.map((message) => {
+                              const isUser = message.role === "user";
 
-                    if (!isUser && !message.content && thinking) {
-                        return null;
-                    }
+                              if (!isUser && !message.content && thinking) {
+                                  return null;
+                              }
 
-                    return (
+                              return (
+                                  <View
+                                      key={message.id}
+                                      style={[
+                                          styles.messageRow,
+                                          isUser
+                                              ? styles.userMessageRow
+                                              : styles.assistantMessageRow,
+                                      ]}
+                                  >
+                                      <View
+                                          style={
+                                              isUser
+                                                  ? styles.userMessage
+                                                  : styles.assistantMessage
+                                          }
+                                      >
+                                          <Text
+                                              style={[
+                                                  styles.messageText,
+                                                  isUser &&
+                                                      styles.userMessageText,
+                                              ]}
+                                          >
+                                              {message.content}
+                                          </Text>
+                                      </View>
+                                  </View>
+                              );
+                          })}
+
+                    {thinking && (
                         <View
-                            key={message.id}
                             style={[
                                 styles.messageRow,
-                                isUser
-                                    ? styles.userMessageRow
-                                    : styles.assistantMessageRow,
+                                styles.assistantMessageRow,
                             ]}
                         >
-                            <View
-                                style={
-                                    isUser
-                                        ? styles.userMessage
-                                        : styles.assistantMessage
-                                }
-                            >
-                                <Text
-                                    style={[
-                                        styles.messageText,
-                                        isUser && styles.userMessageText,
-                                    ]}
-                                >
-                                    {message.content}
+                            <View style={styles.thinkingMessage}>
+                                <View style={styles.thinkingDots}>
+                                    <View style={styles.thinkingDot} />
+                                    <View style={styles.thinkingDot} />
+                                    <View style={styles.thinkingDot} />
+                                </View>
+
+                                <Text style={styles.thinkingText}>
+                                    Thinking
                                 </Text>
                             </View>
                         </View>
-                    );
-                })}
-
-                {thinking && (
-                    <View
-                        style={[styles.messageRow, styles.assistantMessageRow]}
-                    >
-                        <View style={styles.thinkingMessage}>
-                            <View style={styles.thinkingDots}>
-                                <View style={styles.thinkingDot} />
-                                <View style={styles.thinkingDot} />
-                                <View style={styles.thinkingDot} />
-                            </View>
-
-                            <Text style={styles.thinkingText}>Thinking</Text>
-                        </View>
-                    </View>
-                )}
-            </ScrollView>
+                    )}
+                </ScrollView>
+            ) : (
+                renderNoModelState()
+            )}
 
             <View
                 style={[
@@ -223,13 +291,17 @@ export default function Index() {
                 <View style={styles.inputContainer}>
                     <TextInput
                         multiline
-                        placeholder="Ask anything"
+                        placeholder={
+                            activeModel
+                                ? "Ask anything"
+                                : "Download a model to start chatting"
+                        }
                         placeholderTextColor={Colors.textMuted}
                         value={value}
                         onChangeText={setValue}
                         textAlignVertical="top"
                         returnKeyType="default"
-                        editable={!thinking}
+                        editable={!!activeModel && !thinking}
                         style={[
                             styles.input,
                             {
@@ -252,10 +324,10 @@ export default function Index() {
                         <Pressable
                             style={[
                                 styles.sendButton,
-                                (!value.trim() || thinking) &&
+                                (!value.trim() || !activeModel || thinking) &&
                                     styles.sendButtonDisabled,
                             ]}
-                            disabled={!value.trim() || thinking}
+                            disabled={!value.trim() || !activeModel || thinking}
                             onPress={sendMessage}
                         >
                             <RemixIcon
@@ -285,6 +357,66 @@ const styles = StyleSheet.create({
     contentContainer: {
         flexGrow: 1,
     },
+
+    /*
+     * Empty states
+     */
+
+    emptyStateContainer: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 32,
+    },
+
+    emptyStateIcon: {
+        width: 58,
+        height: 58,
+        borderRadius: 18,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: Colors.surfaceSecondary,
+        marginBottom: 18,
+    },
+
+    emptyStateTitle: {
+        fontSize: FontSizes.xl,
+        fontFamily: "DMSans-SemiBold",
+        color: Colors.text,
+        textAlign: "center",
+        marginBottom: 8,
+    },
+
+    emptyStateDescription: {
+        maxWidth: 320,
+        fontSize: FontSizes.md,
+        fontFamily: "DMSans-Regular",
+        lineHeight: 22,
+        color: Colors.textMuted,
+        textAlign: "center",
+        marginBottom: 22,
+    },
+
+    modelsButton: {
+        height: 46,
+        paddingHorizontal: 18,
+        borderRadius: 23,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        backgroundColor: Colors.buttonPrimary,
+    },
+
+    modelsButtonText: {
+        fontSize: FontSizes.md,
+        fontFamily: "DMSans-SemiBold",
+        color: Colors.buttonPrimaryText,
+    },
+
+    /*
+     * Messages
+     */
 
     messageRow: {
         width: "100%",
@@ -348,6 +480,10 @@ const styles = StyleSheet.create({
     userMessageText: {
         color: Colors.textInverse,
     },
+
+    /*
+     * Input
+     */
 
     inputArea: {
         position: "absolute",
