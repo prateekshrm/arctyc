@@ -26,6 +26,7 @@ import {
     getDeviceCapabilities,
 } from "@/utils/device-capabilities";
 import { getModelRecommendations } from "@/utils/model-recommendation";
+import { router } from "expo-router";
 
 type TabFilter = "all" | "installed";
 
@@ -553,25 +554,47 @@ const ModelCard = memo(
                     ) : isDownloaded ? (
                         <View style={styles.downloadedActionsRow}>
                             {isCurrentActive ? (
-                                <Pressable
-                                    onPress={handleUnload}
-                                    style={({ pressed }) => [
-                                        styles.loadButtonSecondary,
-                                        pressed && styles.buttonPressed,
-                                    ]}
-                                >
-                                    <RemixIcon
-                                        name="stop-circle-line"
-                                        size={FontSizes.md}
-                                        color={Colors.buttonSecondaryText}
-                                    />
-
-                                    <Text
-                                        style={styles.loadButtonSecondaryText}
+                                <>
+                                    <Pressable
+                                        onPress={() => router.replace("/")}
+                                        style={({ pressed }) => [
+                                            styles.chatButton,
+                                            pressed && styles.buttonPressed,
+                                        ]}
                                     >
-                                        Unload from Memory
-                                    </Text>
-                                </Pressable>
+                                        <RemixIcon
+                                            name="message-3-line"
+                                            size={FontSizes.md}
+                                            color={Colors.buttonPrimaryText}
+                                        />
+
+                                        <Text style={styles.chatButtonText}>
+                                            Chat
+                                        </Text>
+                                    </Pressable>
+
+                                    <Pressable
+                                        onPress={handleUnload}
+                                        style={({ pressed }) => [
+                                            styles.loadButtonSecondary,
+                                            pressed && styles.buttonPressed,
+                                        ]}
+                                    >
+                                        <RemixIcon
+                                            name="stop-circle-line"
+                                            size={FontSizes.md}
+                                            color={Colors.buttonSecondaryText}
+                                        />
+
+                                        <Text
+                                            style={
+                                                styles.loadButtonSecondaryText
+                                            }
+                                        >
+                                            Unload
+                                        </Text>
+                                    </Pressable>
+                                </>
                             ) : (
                                 <Pressable
                                     onPress={handleLoad}
@@ -1036,6 +1059,26 @@ const styles = StyleSheet.create({
     loadButtonSecondaryText: {
         fontFamily: "DMSans-SemiBold",
         color: Colors.buttonSecondaryText,
+        fontSize: FontSizes.sm,
+    },
+
+    chatButton: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        backgroundColor: Colors.buttonPrimary,
+        borderWidth: 1,
+        borderColor: Colors.buttonPrimary,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 12,
+    },
+
+    chatButtonText: {
+        fontFamily: "DMSans-SemiBold",
+        color: Colors.buttonPrimaryText,
         fontSize: FontSizes.sm,
     },
 
