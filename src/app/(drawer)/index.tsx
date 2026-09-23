@@ -24,6 +24,7 @@ type Message = {
     id: string;
     role: "user" | "assistant";
     content: string;
+    status?: "generating" | "complete" | "stopped" | "error";
 };
 
 export default function Index() {
@@ -37,6 +38,9 @@ export default function Index() {
 
     const [messages, setMessages] = useState<Message[]>([]);
     const [thinking, setThinking] = useState(false);
+    const [generating, setGenerating] = useState(false);
+
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     const scrollViewRef = useRef<ScrollView>(null);
 
@@ -51,7 +55,7 @@ export default function Index() {
     const sendMessage = async () => {
         const prompt = value.trim();
 
-        if (!prompt || thinking) {
+        if (!prompt || thinking || generating) {
             return;
         }
 
@@ -76,65 +80,127 @@ export default function Index() {
             id: assistantMessageId,
             role: "assistant",
             content: "",
+            status: "generating",
         };
 
-        // Capture the conversation BEFORE adding the empty
-        // assistant message. This is the context we send to the model.
+        // Capture the conversation before adding the empty assistant
+        // message. This is the context sent to the model.
         const conversation = [...messages, userMessage];
 
         setMessages((current) => [...current, userMessage, assistantMessage]);
 
         setValue("");
         setInputHeight(24);
+
         setThinking(true);
+        setGenerating(true);
+
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
 
         try {
-            const { textStream } = streamText({
+            const result = streamText({
                 model,
 
-                // System instructions are persistent context.
                 system: "You are Arctyc, a helpful AI assistant.",
 
-                // Send the last 20 messages as context.
                 messages: conversation.slice(-20).map((message) => ({
                     role: message.role,
                     content: message.content,
                 })),
+
+                abortSignal: controller.signal,
+
+                telemetry: {
+                    isEnabled: false,
+                },
             });
 
             let response = "";
             let hasStartedResponding = false;
 
-            for await (const delta of textStream) {
-                response += delta;
+            try {
+                for await (const delta of result.textStream) {
+                    response += delta;
 
-                if (!hasStartedResponding) {
-                    hasStartedResponding = true;
-                    setThinking(false);
+                    if (!hasStartedResponding) {
+                        hasStartedResponding = true;
+                        setThinking(false);
+                    }
+
+                    setMessages((current) =>
+                        current.map((message) =>
+                            message.id === assistantMessageId
+                                ? {
+                                      ...message,
+                                      content: response,
+                                      status: "generating",
+                                  }
+                                : message,
+                        ),
+                    );
                 }
 
+                // Stream finished normally.
                 setMessages((current) =>
                     current.map((message) =>
                         message.id === assistantMessageId
                             ? {
                                   ...message,
                                   content: response,
+                                  status: "complete",
+                              }
+                            : message,
+                    ),
+                );
+
+                console.log("AI response:", response);
+            } catch (error) {
+                // Abort is expected when the user presses Stop.
+                if (controller.signal.aborted) {
+                    console.log("Generation stopped by user.");
+
+                    // Keep the partial response.
+                    setMessages((current) =>
+                        current.map((message) =>
+                            message.id === assistantMessageId
+                                ? {
+                                      ...message,
+                                      status: "stopped",
+                                  }
+                                : message,
+                        ),
+                    );
+
+                    return;
+                }
+
+                console.error("Stream error:", error);
+
+                // Unexpected generation error.
+                setMessages((current) =>
+                    current.map((message) =>
+                        message.id === assistantMessageId
+                            ? {
+                                  ...message,
+                                  status: "error",
                               }
                             : message,
                     ),
                 );
             }
-
-            console.log("AI response:", response);
-        } catch (error) {
-            console.error("Failed to generate AI response:", error);
-
-            setMessages((current) =>
-                current.filter((message) => message.id !== assistantMessageId),
-            );
         } finally {
             setThinking(false);
+            setGenerating(false);
+
+            if (abortControllerRef.current === controller) {
+                abortControllerRef.current = null;
+            }
         }
+    };
+
+    const stopGeneration = () => {
+        abortControllerRef.current?.abort();
     };
 
     const openModels = () => {
@@ -235,21 +301,22 @@ export default function Index() {
                                                   : styles.assistantMessage
                                           }
                                       >
-                                          <Text
-                                              style={[
-                                                  styles.messageText,
-                                                  isUser &&
-                                                      styles.userMessageText,
-                                              ]}
-                                          >
+                                          <View>
                                               {isUser ? (
-                                                  message.content
+                                                  <Text
+                                                      style={[
+                                                          styles.messageText,
+                                                          styles.userMessageText,
+                                                      ]}
+                                                  >
+                                                      {message.content}
+                                                  </Text>
                                               ) : (
                                                   <Markdown
                                                       markdown={message.content}
                                                   />
                                               )}
-                                          </Text>
+                                          </View>
                                       </View>
                                   </View>
                               );
@@ -308,7 +375,7 @@ export default function Index() {
                         onChangeText={setValue}
                         textAlignVertical="top"
                         returnKeyType="default"
-                        editable={!!activeModel && !thinking}
+                        editable={!!activeModel && !generating}
                         style={[
                             styles.input,
                             {
@@ -331,14 +398,19 @@ export default function Index() {
                         <Pressable
                             style={[
                                 styles.sendButton,
-                                (!value.trim() || !activeModel || thinking) &&
+                                !generating &&
+                                    (!value.trim() || !activeModel) &&
                                     styles.sendButtonDisabled,
                             ]}
-                            disabled={!value.trim() || !activeModel || thinking}
-                            onPress={sendMessage}
+                            onPress={generating ? stopGeneration : sendMessage}
+                            disabled={
+                                !generating && (!value.trim() || !activeModel)
+                            }
                         >
                             <RemixIcon
-                                name="arrow-up-line"
+                                name={
+                                    generating ? "stop-fill" : "arrow-up-line"
+                                }
                                 size={FontSizes.xl}
                                 color={Colors.buttonPrimaryText}
                             />
@@ -541,7 +613,7 @@ const styles = StyleSheet.create({
 
     sendButton: {
         height: 38,
-        paddingHorizontal: 14,
+        width: 38,
         borderRadius: 20,
         backgroundColor: Colors.buttonPrimary,
         alignItems: "center",
