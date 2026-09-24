@@ -1,3 +1,4 @@
+import CustomDrawer from "@/components/navigation/CustomDrawer";
 import Header from "@/components/ui/Header";
 import { Colors, FontSizes } from "@constants/theme";
 import { Drawer } from "expo-router/drawer";
@@ -6,6 +7,7 @@ import Icon from "react-native-remix-icon";
 export default function RootLayout() {
     return (
         <Drawer
+            drawerContent={(props) => <CustomDrawer {...props} />}
             screenOptions={{
                 drawerActiveTintColor: Colors.text,
                 header: ({ options }) => <Header title={options.title ?? ""} />,

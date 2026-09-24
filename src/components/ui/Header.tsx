@@ -1,3 +1,4 @@
+import { useChatStore } from "@/stores/chat.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,9 +13,11 @@ type HeaderProps = {
 
 const Header = ({ title }: HeaderProps) => {
     const insets = useSafeAreaInsets();
+    const activeChatId = useChatStore((state) => state.activeChatId);
 
     const activeModelId = useModelStore((state) => state.activeModelId);
     const models = useModelStore((state) => state.models);
+    const newChat = useChatStore((state) => state.newChat);
 
     const activeModel = models.find((model) => model.id === activeModelId);
 
@@ -71,6 +74,16 @@ const Header = ({ title }: HeaderProps) => {
             ) : (
                 <Text style={styles.text}>{title}</Text>
             )}
+
+            {pathname === "/" && activeChatId && (
+                <Pressable
+                    style={styles.newChatButton}
+                    onPress={() => newChat()}
+                    hitSlop={8}
+                >
+                    <Icon name="edit-box-line" size={20} color={Colors.text} />
+                </Pressable>
+            )}
         </View>
     );
 };
@@ -88,7 +101,7 @@ const styles = StyleSheet.create({
         paddingBottom: 16,
         flexDirection: "row",
         alignItems: "center",
-        gap: 16,
+        gap: 12,
     },
 
     menuButton: {
@@ -96,6 +109,14 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 100,
+    },
+
+    newChatButton: {
+        backgroundColor: Colors.buttonSecondary,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 100,
+        marginLeft: "auto",
     },
 
     modelPill: {

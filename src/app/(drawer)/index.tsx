@@ -1,5 +1,11 @@
 import Markdown from "@/components/ui/Markdown";
+import {
+    getMessages,
+    saveMessage,
+    updateMessageContent,
+} from "@/services/chat-db";
 import { getActiveLanguageModel } from "@/services/model-manager";
+import { useChatStore } from "@/stores/chat.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
@@ -33,6 +39,10 @@ export default function Index() {
 
     const activeModel = useModelStore((state) => state.activeModelId);
 
+    const activeChatId = useChatStore((state) => state.activeChatId);
+    const createChat = useChatStore((state) => state.createChat);
+    const loadChats = useChatStore((state) => state.loadChats);
+
     const [value, setValue] = useState("");
     const [inputHeight, setInputHeight] = useState(24);
 
@@ -41,8 +51,45 @@ export default function Index() {
     const [generating, setGenerating] = useState(false);
 
     const abortControllerRef = useRef<AbortController | null>(null);
-
     const scrollViewRef = useRef<ScrollView>(null);
+    const loadedChatIdRef = useRef<string | null>(null);
+
+    // Load messages when active chat changes
+    useEffect(() => {
+        if (loadedChatIdRef.current === activeChatId) {
+            return;
+        }
+        loadedChatIdRef.current = activeChatId;
+
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+
+        if (!activeChatId) {
+            setMessages([]);
+            return;
+        }
+
+        let isMounted = true;
+        getMessages(activeChatId)
+            .then((dbMsgs) => {
+                if (isMounted) {
+                    setMessages(
+                        dbMsgs.map((m) => ({
+                            id: m.id,
+                            role: m.role,
+                            content: m.content,
+                            status: "complete",
+                        })),
+                    );
+                }
+            })
+            .catch((err) => console.error("Failed to load messages:", err));
+
+        return () => {
+            isMounted = false;
+        };
+    }, [activeChatId]);
 
     useEffect(() => {
         requestAnimationFrame(() => {
@@ -68,6 +115,17 @@ export default function Index() {
 
         console.log("User prompt:", prompt);
 
+        // Ensure active chat exists or create one
+        let currentChatId = activeChatId;
+        if (!currentChatId) {
+            const newChatId = `chat_${Date.now()}`;
+            const title =
+                prompt.length > 35 ? `${prompt.slice(0, 35)}...` : prompt;
+            loadedChatIdRef.current = newChatId;
+            await createChat(newChatId, title);
+            currentChatId = newChatId;
+        }
+
         const userMessage: Message = {
             id: `${Date.now()}-user`,
             role: "user",
@@ -82,6 +140,19 @@ export default function Index() {
             content: "",
             status: "generating",
         };
+
+        // Persist user and placeholder assistant message
+        await saveMessage(currentChatId, {
+            id: userMessage.id,
+            role: userMessage.role,
+            content: userMessage.content,
+        });
+
+        await saveMessage(currentChatId, {
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+        });
 
         // Capture the conversation before adding the empty assistant
         // message. This is the context sent to the model.
@@ -154,6 +225,9 @@ export default function Index() {
                     ),
                 );
 
+                await updateMessageContent(assistantMessageId, response);
+                loadChats();
+
                 console.log("AI response:", response);
             } catch (error) {
                 // Abort is expected when the user presses Stop.
@@ -172,10 +246,23 @@ export default function Index() {
                         ),
                     );
 
+                    if (response) {
+                        await updateMessageContent(
+                            assistantMessageId,
+                            response,
+                        );
+                    }
+                    loadChats();
+
                     return;
                 }
 
                 console.error("Stream error:", error);
+
+                if (response) {
+                    await updateMessageContent(assistantMessageId, response);
+                }
+                loadChats();
 
                 // Unexpected generation error.
                 setMessages((current) =>
@@ -261,7 +348,7 @@ export default function Index() {
         >
             <StatusBar style="dark" />
 
-            {activeModel ? (
+            {activeModel || activeChatId ? (
                 <ScrollView
                     ref={scrollViewRef}
                     style={styles.container}
@@ -368,7 +455,7 @@ export default function Index() {
                         placeholder={
                             activeModel
                                 ? "Ask anything"
-                                : "Download a model to start chatting"
+                                : "Load a model to start chatting"
                         }
                         placeholderTextColor={Colors.textMuted}
                         value={value}
