@@ -1,7 +1,6 @@
 import { useChatStore } from "@/stores/chat.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useNavigation, usePathname } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-remix-icon";
@@ -35,25 +34,11 @@ const Header = ({ title }: HeaderProps) => {
                 },
             ]}
         >
-            <LinearGradient
-                colors={[
-                    "rgba(255, 255, 255, 0.9)",
-                    "rgba(255, 255, 255, 0.7)",
-                    "transparent",
-                ]}
-                locations={[0.3, 0.5, 1]}
-                style={{
-                    ...StyleSheet.absoluteFill,
-                    height: "400%",
-                }}
-                pointerEvents="none"
-            />
-
             <Pressable
                 style={styles.menuButton}
                 onPress={() => (navigation as any).openDrawer()}
             >
-                <Icon name="menu-2-line" size={20} color={Colors.text} />
+                <Icon name="menu-2-line" size={20} color={Colors.textInverse} />
             </Pressable>
 
             {showActiveModel ? (
@@ -68,7 +53,7 @@ const Header = ({ title }: HeaderProps) => {
                     <Icon
                         name="arrow-right-s-line"
                         size={FontSizes.xl}
-                        color={Colors.text}
+                        color={Colors.textInverse}
                     />
                 </Pressable>
             ) : (
@@ -81,7 +66,11 @@ const Header = ({ title }: HeaderProps) => {
                     onPress={() => newChat()}
                     hitSlop={8}
                 >
-                    <Icon name="edit-box-line" size={20} color={Colors.text} />
+                    <Icon
+                        name="edit-box-line"
+                        size={20}
+                        color={Colors.textInverse}
+                    />
                 </Pressable>
             )}
         </View>
@@ -92,27 +81,23 @@ export default Header;
 
 const styles = StyleSheet.create({
     headerContainer: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1001,
         paddingHorizontal: 16,
         paddingBottom: 16,
         flexDirection: "row",
         alignItems: "center",
         gap: 12,
+        backgroundColor: Colors.primary,
     },
 
     menuButton: {
-        backgroundColor: Colors.buttonSecondary,
+        backgroundColor: Colors.secondary,
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 100,
     },
 
     newChatButton: {
-        backgroundColor: Colors.buttonSecondary,
+        backgroundColor: Colors.secondary,
         paddingVertical: 6,
         paddingHorizontal: 10,
         borderRadius: 100,
@@ -123,7 +108,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 2,
-        backgroundColor: Colors.buttonSecondary,
+        backgroundColor: Colors.secondary,
         paddingVertical: 6,
         paddingLeft: 14,
         paddingRight: 8,
@@ -133,13 +118,13 @@ const styles = StyleSheet.create({
 
     modelName: {
         fontSize: FontSizes.md,
-        color: Colors.text,
+        color: Colors.textInverse,
         fontFamily: "DMSans-Medium",
     },
 
     text: {
         fontSize: FontSizes.xl,
-        color: Colors.text,
+        color: Colors.textInverse,
         fontFamily: "PlusJakartaSans-SemiBold",
     },
 });

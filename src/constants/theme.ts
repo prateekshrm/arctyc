@@ -1,6 +1,7 @@
 export const Colors = {
     // Brand & Base
     primary: "#000000",
+    secondary: "#3f3f3f",
     surface: "#FFFFFF",
     surfaceSecondary: "#F4F4F5",
     surfaceSubtle: "#FAFAFA",

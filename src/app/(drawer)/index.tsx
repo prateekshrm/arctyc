@@ -9,7 +9,6 @@ import { useChatStore } from "@/stores/chat.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
@@ -346,109 +345,100 @@ export default function Index() {
             style={styles.mainContainer}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-            <StatusBar style="dark" />
+            <StatusBar style="light" />
 
-            {activeModel || activeChatId ? (
-                <ScrollView
-                    ref={scrollViewRef}
-                    style={styles.container}
-                    contentContainerStyle={[
-                        styles.contentContainer,
-                        {
-                            paddingTop: insets.top + 70,
-                            paddingBottom: insets.bottom + 200,
-                        },
-                    ]}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    {messages.length === 0 && !thinking
-                        ? renderEmptyChatState()
-                        : messages.map((message) => {
-                              const isUser = message.role === "user";
+            <View style={styles.container}>
+                {activeModel || activeChatId ? (
+                    <ScrollView
+                        ref={scrollViewRef}
+                        style={styles.chatContainer}
+                        contentContainerStyle={styles.contentContainer}
+                        showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {messages.length === 0 && !thinking
+                            ? renderEmptyChatState()
+                            : messages.map((message) => {
+                                  const isUser = message.role === "user";
 
-                              if (!isUser && !message.content && thinking) {
-                                  return null;
-                              }
+                                  if (!isUser && !message.content && thinking) {
+                                      return null;
+                                  }
 
-                              return (
-                                  <View
-                                      key={message.id}
-                                      style={[
-                                          styles.messageRow,
-                                          isUser
-                                              ? styles.userMessageRow
-                                              : styles.assistantMessageRow,
-                                      ]}
-                                  >
+                                  return (
                                       <View
-                                          style={
+                                          key={message.id}
+                                          style={[
+                                              styles.messageRow,
                                               isUser
-                                                  ? styles.userMessage
-                                                  : styles.assistantMessage
-                                          }
+                                                  ? styles.userMessageRow
+                                                  : styles.assistantMessageRow,
+                                          ]}
                                       >
-                                          <View>
-                                              {isUser ? (
-                                                  <Text
-                                                      style={[
-                                                          styles.messageText,
-                                                          styles.userMessageText,
-                                                      ]}
-                                                  >
-                                                      {message.content}
-                                                  </Text>
-                                              ) : (
-                                                  <Markdown
-                                                      markdown={message.content}
-                                                  />
-                                              )}
+                                          <View
+                                              style={
+                                                  isUser
+                                                      ? styles.userMessage
+                                                      : styles.assistantMessage
+                                              }
+                                          >
+                                              <View>
+                                                  {isUser ? (
+                                                      <Text
+                                                          style={[
+                                                              styles.messageText,
+                                                              styles.userMessageText,
+                                                          ]}
+                                                      >
+                                                          {message.content}
+                                                      </Text>
+                                                  ) : (
+                                                      <Markdown
+                                                          markdown={
+                                                              message.content
+                                                          }
+                                                      />
+                                                  )}
+                                              </View>
                                           </View>
                                       </View>
-                                  </View>
-                              );
-                          })}
+                                  );
+                              })}
 
-                    {thinking && (
-                        <View
-                            style={[
-                                styles.messageRow,
-                                styles.assistantMessageRow,
-                            ]}
-                        >
-                            <View style={styles.thinkingMessage}>
-                                <View style={styles.thinkingDots}>
-                                    <View style={styles.thinkingDot} />
-                                    <View style={styles.thinkingDot} />
-                                    <View style={styles.thinkingDot} />
+                        {thinking && (
+                            <View
+                                style={[
+                                    styles.messageRow,
+                                    styles.assistantMessageRow,
+                                ]}
+                            >
+                                <View style={styles.thinkingMessage}>
+                                    <View style={styles.thinkingDots}>
+                                        <View style={styles.thinkingDot} />
+                                        <View style={styles.thinkingDot} />
+                                        <View style={styles.thinkingDot} />
+                                    </View>
+
+                                    <Text style={styles.thinkingText}>
+                                        Thinking
+                                    </Text>
                                 </View>
-
-                                <Text style={styles.thinkingText}>
-                                    Thinking
-                                </Text>
                             </View>
-                        </View>
-                    )}
-                </ScrollView>
-            ) : (
-                renderNoModelState()
-            )}
+                        )}
+                    </ScrollView>
+                ) : (
+                    renderNoModelState()
+                )}
+            </View>
 
             <View
                 style={[
                     styles.inputArea,
                     {
-                        paddingBottom: insets.bottom + 12,
+                        paddingBottom: insets.bottom + 16,
                     },
                 ]}
             >
-                <LinearGradient
-                    style={styles.gradientMask}
-                    colors={["transparent", Colors.surface]}
-                    locations={[0, 0.2]}
-                    pointerEvents="none"
-                />
-
                 <View style={styles.inputContainer}>
                     <TextInput
                         multiline
@@ -512,12 +502,22 @@ export default function Index() {
 const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.primary,
     },
 
     container: {
         flex: 1,
-        paddingHorizontal: 16,
+        backgroundColor: Colors.surface,
+        borderRadius: 32,
+        borderBottomRightRadius: 0,
+        borderBottomLeftRadius: 0,
+        borderWidth: 16,
+        borderColor: Colors.surface,
+        overflow: "hidden",
+    },
+
+    chatContainer: {
+        flex: 1,
     },
 
     contentContainer: {
@@ -601,9 +601,8 @@ const styles = StyleSheet.create({
         maxWidth: "85%",
         paddingHorizontal: 16,
         paddingVertical: 11,
-        borderRadius: 20,
+        borderRadius: 16,
         backgroundColor: Colors.primary,
-        borderBottomRightRadius: 6,
     },
 
     assistantMessage: {
@@ -652,24 +651,16 @@ const styles = StyleSheet.create({
      */
 
     inputArea: {
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        paddingHorizontal: 12,
-        paddingTop: 25,
-    },
-
-    gradientMask: {
-        ...StyleSheet.absoluteFill,
+        paddingHorizontal: 16,
+        backgroundColor: Colors.surface,
     },
 
     inputContainer: {
         width: "100%",
         minHeight: 96,
-        padding: 12,
+        padding: 16,
         backgroundColor: Colors.surfaceSecondary,
-        borderRadius: 28,
+        borderRadius: 24,
     },
 
     input: {

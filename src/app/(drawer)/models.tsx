@@ -27,6 +27,7 @@ import {
 } from "@/utils/device-capabilities";
 import { getModelRecommendations } from "@/utils/model-recommendation";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 
 type TabFilter = "all" | "installed";
 
@@ -76,147 +77,204 @@ export default function Models() {
     );
 
     return (
-        <ScrollView
-            contentContainerStyle={[
-                styles.contentContainer,
-                {
-                    paddingTop: insets.top + 72,
-                    paddingBottom: insets.bottom + 40,
-                },
-            ]}
-            showsVerticalScrollIndicator={false}
-        >
-            <View style={styles.topHeader}>
-                <Text style={styles.screenDescription}>
-                    Download and run open-source language models directly on
-                    your device. 100% private, with zero internet required.
-                </Text>
-            </View>
-
-            <View style={styles.systemInfoRow}>
-                <View style={styles.systemInfoItem}>
-                    <View style={styles.systemIconWrapper}>
-                        <RemixIcon
-                            name="hard-drive-2-line"
-                            size={FontSizes.md}
-                            color={Colors.text}
-                        />
-                    </View>
-                    <View>
-                        <Text style={styles.systemInfoLabel}>Storage</Text>
-                        <Text style={styles.systemInfoValue}>
-                            {device.freeStorageGB.toFixed(1)} GB Free
+        <View style={styles.mainContainer}>
+            <StatusBar style="light" />
+            <View style={styles.container}>
+                <ScrollView
+                    contentContainerStyle={{
+                        paddingBottom: insets.bottom + 16,
+                        paddingTop: 8,
+                    }}
+                    style={styles.modelContainer}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.topHeader}>
+                        <Text style={styles.screenDescription}>
+                            Download and run open-source language models
+                            directly on your device. 100% private, with zero
+                            internet required.
                         </Text>
                     </View>
-                </View>
 
-                <View style={styles.systemInfoDivider} />
-
-                <View style={styles.systemInfoItem}>
-                    <View style={styles.systemIconWrapper}>
-                        <RemixIcon
-                            name="dashboard-3-line"
-                            size={FontSizes.md}
-                            color={Colors.text}
-                        />
-                    </View>
-                    <View>
-                        <View
-                            style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                gap: 4,
-                            }}
-                        >
-                            <Text style={styles.systemInfoLabel}>RAM</Text>
-                            <Pressable
-                                onPress={() =>
-                                    showDialog({
-                                        title: "About usable RAM",
-                                        message:
-                                            "The RAM shown here is the usable RAM reported by your device. It may be lower than the RAM advertised by the manufacturer because some memory is reserved for the system and hardware.",
-                                        confirmButton: {
-                                            label: "OK",
-                                        },
-                                    })
-                                }
-                                hitSlop={20}
-                                accessibilityRole="button"
-                                accessibilityLabel="Learn about usable RAM"
-                            >
+                    <View style={styles.systemInfoRow}>
+                        <View style={styles.systemInfoItem}>
+                            <View style={styles.systemIconWrapper}>
                                 <RemixIcon
-                                    name="information-line"
-                                    size={FontSizes.xs}
-                                    color={Colors.textSecondary}
+                                    name="hard-drive-2-line"
+                                    size={FontSizes.md}
+                                    color={Colors.text}
                                 />
+                            </View>
+                            <View>
+                                <Text style={styles.systemInfoLabel}>
+                                    Storage
+                                </Text>
+                                <Text style={styles.systemInfoValue}>
+                                    {device.freeStorageGB.toFixed(1)} GB Free
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.systemInfoDivider} />
+
+                        <View style={styles.systemInfoItem}>
+                            <View style={styles.systemIconWrapper}>
+                                <RemixIcon
+                                    name="dashboard-3-line"
+                                    size={FontSizes.md}
+                                    color={Colors.text}
+                                />
+                            </View>
+                            <View>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        gap: 4,
+                                    }}
+                                >
+                                    <Text style={styles.systemInfoLabel}>
+                                        RAM
+                                    </Text>
+                                    <Pressable
+                                        onPress={() =>
+                                            showDialog({
+                                                title: "About usable RAM",
+                                                message:
+                                                    "The RAM shown here is the usable RAM reported by your device. It may be lower than the RAM advertised by the manufacturer because some memory is reserved for the system and hardware.",
+                                                confirmButton: {
+                                                    label: "OK",
+                                                },
+                                            })
+                                        }
+                                        hitSlop={20}
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Learn about usable RAM"
+                                    >
+                                        <RemixIcon
+                                            name="information-line"
+                                            size={FontSizes.xs}
+                                            color={Colors.textSecondary}
+                                        />
+                                    </Pressable>
+                                </View>
+                                <Text style={styles.systemInfoValue}>
+                                    {device.totalRamGB !== null
+                                        ? `${device.totalRamGB.toFixed(1)} GB Usable`
+                                        : "Available"}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {installedModels.length > 0 && (
+                        <View style={styles.filterChipsRow}>
+                            <Pressable
+                                style={[
+                                    styles.filterChip,
+                                    activeTab === "all" &&
+                                        styles.filterChipActive,
+                                ]}
+                                onPress={() => setActiveTab("all")}
+                            >
+                                <Text
+                                    style={[
+                                        styles.filterChipText,
+                                        activeTab === "all" &&
+                                            styles.filterChipTextActive,
+                                    ]}
+                                >
+                                    All ({models.length})
+                                </Text>
+                            </Pressable>
+
+                            <Pressable
+                                style={[
+                                    styles.filterChip,
+                                    activeTab === "installed" &&
+                                        styles.filterChipActive,
+                                ]}
+                                onPress={() => setActiveTab("installed")}
+                            >
+                                <Text
+                                    style={[
+                                        styles.filterChipText,
+                                        activeTab === "installed" &&
+                                            styles.filterChipTextActive,
+                                    ]}
+                                >
+                                    Installed ({installedModels.length})
+                                </Text>
                             </Pressable>
                         </View>
-                        <Text style={styles.systemInfoValue}>
-                            {device.totalRamGB !== null
-                                ? `${device.totalRamGB.toFixed(1)} GB Usable`
-                                : "Available"}
-                        </Text>
-                    </View>
-                </View>
-            </View>
+                    )}
 
-            {installedModels.length > 0 && (
-                <View style={styles.filterChipsRow}>
-                    <Pressable
-                        style={[
-                            styles.filterChip,
-                            activeTab === "all" && styles.filterChipActive,
-                        ]}
-                        onPress={() => setActiveTab("all")}
-                    >
-                        <Text
-                            style={[
-                                styles.filterChipText,
-                                activeTab === "all" &&
-                                    styles.filterChipTextActive,
-                            ]}
-                        >
-                            All ({models.length})
-                        </Text>
-                    </Pressable>
+                    {activeTab === "all" || installedModels.length === 0 ? (
+                        <>
+                            {recommendedModels.length > 0 && (
+                                <View style={styles.section}>
+                                    <View style={styles.sectionHeader}>
+                                        <Text style={styles.sectionTitleBig}>
+                                            Recommended for your device
+                                        </Text>
+                                        <Text style={styles.sectionDescription}>
+                                            Models optimized to run smoothly
+                                            based on your available memory and
+                                            storage.
+                                        </Text>
+                                    </View>
 
-                    <Pressable
-                        style={[
-                            styles.filterChip,
-                            activeTab === "installed" &&
-                                styles.filterChipActive,
-                        ]}
-                        onPress={() => setActiveTab("installed")}
-                    >
-                        <Text
-                            style={[
-                                styles.filterChipText,
-                                activeTab === "installed" &&
-                                    styles.filterChipTextActive,
-                            ]}
-                        >
-                            Installed ({installedModels.length})
-                        </Text>
-                    </Pressable>
-                </View>
-            )}
+                                    <View style={styles.modelsGrid}>
+                                        {recommendedModels.map((model) => (
+                                            <ModelCard
+                                                key={model.id}
+                                                model={model}
+                                                device={device}
+                                            />
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
 
-            {activeTab === "all" || installedModels.length === 0 ? (
-                <>
-                    {recommendedModels.length > 0 && (
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitleBig}>
+                                        {recommendedModels.length > 0
+                                            ? "Other Models"
+                                            : "All Models"}
+                                    </Text>
+                                    <Text style={styles.sectionDescription}>
+                                        Browse all available models with
+                                        different capabilities, sizes, and
+                                        speeds.
+                                    </Text>
+                                </View>
+
+                                <View style={styles.modelsGrid}>
+                                    {otherModels.map((model) => (
+                                        <ModelCard
+                                            key={model.id}
+                                            model={model}
+                                            device={device}
+                                        />
+                                    ))}
+                                </View>
+                            </View>
+                        </>
+                    ) : (
                         <View style={styles.section}>
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitleBig}>
-                                    Recommended for your device
+                                    Installed Models
                                 </Text>
                                 <Text style={styles.sectionDescription}>
-                                    Models optimized to run smoothly based on
-                                    your available memory and storage.
+                                    Models downloaded to your device and ready
+                                    to load for offline chat.
                                 </Text>
                             </View>
 
                             <View style={styles.modelsGrid}>
-                                {recommendedModels.map((model) => (
+                                {installedModels.map((model) => (
                                     <ModelCard
                                         key={model.id}
                                         model={model}
@@ -226,55 +284,9 @@ export default function Models() {
                             </View>
                         </View>
                     )}
-
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitleBig}>
-                                {recommendedModels.length > 0
-                                    ? "Other Models"
-                                    : "All Models"}
-                            </Text>
-                            <Text style={styles.sectionDescription}>
-                                Browse all available models with different
-                                capabilities, sizes, and speeds.
-                            </Text>
-                        </View>
-
-                        <View style={styles.modelsGrid}>
-                            {otherModels.map((model) => (
-                                <ModelCard
-                                    key={model.id}
-                                    model={model}
-                                    device={device}
-                                />
-                            ))}
-                        </View>
-                    </View>
-                </>
-            ) : (
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitleBig}>
-                            Installed Models
-                        </Text>
-                        <Text style={styles.sectionDescription}>
-                            Models downloaded to your device and ready to load
-                            for offline chat.
-                        </Text>
-                    </View>
-
-                    <View style={styles.modelsGrid}>
-                        {installedModels.map((model) => (
-                            <ModelCard
-                                key={model.id}
-                                model={model}
-                                device={device}
-                            />
-                        ))}
-                    </View>
-                </View>
-            )}
-        </ScrollView>
+                </ScrollView>
+            </View>
+        </View>
     );
 }
 
@@ -693,8 +705,23 @@ const formatBytes = (bytes: number) => {
 };
 
 const styles = StyleSheet.create({
-    contentContainer: {
-        paddingHorizontal: 16,
+    mainContainer: {
+        flex: 1,
+        backgroundColor: Colors.primary,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: Colors.surface,
+        borderRadius: 32,
+        borderBottomRightRadius: 0,
+        borderBottomLeftRadius: 0,
+        borderWidth: 16,
+        borderBottomWidth: 0,
+        borderColor: Colors.surface,
+        overflow: "hidden",
+    },
+    modelContainer: {
+        flex: 1,
     },
 
     topHeader: {
@@ -761,7 +788,7 @@ const styles = StyleSheet.create({
         paddingVertical: 7,
         paddingHorizontal: 14,
         borderRadius: 999,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         borderWidth: 1,
         borderColor: Colors.border,
     },
@@ -814,7 +841,7 @@ const styles = StyleSheet.create({
         borderRadius: 18,
         borderWidth: 1,
         borderColor: Colors.border,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
@@ -860,7 +887,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 7,
         paddingVertical: 2.5,
         borderRadius: 6,
-        backgroundColor: Colors.surfaceSecondary,
+        backgroundColor: Colors.surface,
         borderWidth: 1,
         borderColor: Colors.border,
     },
@@ -891,7 +918,7 @@ const styles = StyleSheet.create({
     statsGrid: {
         marginTop: 12,
         borderRadius: 12,
-        backgroundColor: Colors.surfaceSubtle,
+        backgroundColor: Colors.surface,
         borderWidth: 1,
         borderColor: Colors.border,
         paddingVertical: 8,
