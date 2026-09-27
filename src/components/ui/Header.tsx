@@ -38,7 +38,7 @@ const Header = ({ title }: HeaderProps) => {
                 style={styles.menuButton}
                 onPress={() => (navigation as any).openDrawer()}
             >
-                <Icon name="menu-2-line" size={20} color={Colors.textInverse} />
+                <Icon name="menu-5-line" size={20} color={Colors.textInverse} />
             </Pressable>
 
             {showActiveModel ? (

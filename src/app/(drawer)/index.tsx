@@ -352,7 +352,7 @@ export default function Index() {
                     <ScrollView
                         ref={scrollViewRef}
                         style={styles.chatContainer}
-                        contentContainerStyle={styles.contentContainer}
+                        contentContainerStyle={styles.chatContentContainer}
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
                     >
@@ -508,9 +508,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.surface,
-        borderRadius: 32,
-        borderBottomRightRadius: 0,
-        borderBottomLeftRadius: 0,
+        borderTopRightRadius: 32,
+        borderTopLeftRadius: 32,
         borderWidth: 16,
         borderColor: Colors.surface,
         overflow: "hidden",
@@ -520,7 +519,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    contentContainer: {
+    chatContentContainer: {
         flexGrow: 1,
     },
 

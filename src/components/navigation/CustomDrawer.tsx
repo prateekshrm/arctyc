@@ -2,12 +2,9 @@ import { useChatStore } from "@/stores/chat.store";
 import { useDialogStore } from "@/stores/dialog.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { router, usePathname } from "expo-router";
-import {
-    DrawerContentComponentProps,
-    DrawerContentScrollView,
-} from "expo-router/drawer";
+import { DrawerContentComponentProps } from "expo-router/drawer";
 import { useEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -60,112 +57,130 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
     };
 
     return (
-        <View
-            style={[
-                styles.container,
-                {
-                    paddingTop: insets.top,
-                    paddingBottom: insets.bottom + 12,
-                },
-            ]}
-        >
-            <DrawerContentScrollView
-                {...props}
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
+        <View style={styles.mainContainer}>
+            {/* Header Branding */}
+            <View
+                style={[
+                    styles.header,
+                    {
+                        paddingTop: insets.top + 16,
+                    },
+                ]}
             >
-                {/* Header Branding */}
-                <View style={styles.header}>
-                    <Text style={styles.brandTitle}>Arctyc</Text>
-                </View>
-
-                {/* New Chat Button */}
+                <Text style={styles.brandTitle}>Arctyc</Text>
                 <Pressable
-                    style={({ pressed }) => [
-                        styles.newChatButton,
-                        pressed && styles.pressed,
-                    ]}
-                    onPress={handleNewChat}
+                    style={styles.menuCloseButton}
+                    onPress={() => props.navigation.closeDrawer()}
                 >
-                    <Icon name="add-line" size={20} color={Colors.text} />
-                    <Text style={styles.newChatText}>New Chat</Text>
+                    <Icon
+                        name="close-line"
+                        size={20}
+                        color={Colors.textInverse}
+                    />
                 </Pressable>
+            </View>
+            <View style={styles.container}>
+                <ScrollView
+                    {...props}
+                    style={styles.drawerContainer}
+                    contentContainerStyle={styles.drawerContentContainer}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.newChatButton,
+                            pressed && styles.pressed,
+                        ]}
+                        onPress={handleNewChat}
+                    >
+                        <Icon name="add-line" size={20} color={Colors.text} />
+                        <Text style={styles.newChatText}>New Chat</Text>
+                    </Pressable>
 
-                {/* Chat History Section */}
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Recent Chats</Text>
-                </View>
-
-                {chats.length === 0 ? (
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No saved chats</Text>
+                    {/* Chat History Section */}
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Recent Chats</Text>
                     </View>
-                ) : (
-                    <View style={styles.chatList}>
-                        {chats.map((chat) => {
-                            const isActive =
-                                pathname === "/" && activeChatId === chat.id;
 
-                            return (
-                                <View
-                                    key={chat.id}
-                                    style={[
-                                        styles.chatItemRow,
-                                        isActive && styles.activeChatItemRow,
-                                    ]}
-                                >
-                                    <Pressable
-                                        style={styles.chatItemContent}
-                                        onPress={() =>
-                                            handleSelectChat(chat.id)
-                                        }
+                    {chats.length === 0 ? (
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>No saved chats</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.chatList}>
+                            {chats.map((chat) => {
+                                const isActive =
+                                    pathname === "/" &&
+                                    activeChatId === chat.id;
+
+                                return (
+                                    <View
+                                        key={chat.id}
+                                        style={[
+                                            styles.chatItemRow,
+                                            isActive &&
+                                                styles.activeChatItemRow,
+                                        ]}
                                     >
-                                        <Icon
-                                            name="message-3-line"
-                                            size={18}
-                                            color={
-                                                isActive
-                                                    ? Colors.text
-                                                    : Colors.textSecondary
+                                        <Pressable
+                                            style={styles.chatItemContent}
+                                            onPress={() =>
+                                                handleSelectChat(chat.id)
                                             }
-                                        />
-                                        <Text
-                                            style={[
-                                                styles.chatTitle,
-                                                isActive &&
-                                                    styles.activeChatTitle,
-                                            ]}
-                                            numberOfLines={1}
                                         >
-                                            {chat.title}
-                                        </Text>
-                                    </Pressable>
+                                            <Icon
+                                                name="message-3-line"
+                                                size={18}
+                                                color={
+                                                    isActive
+                                                        ? Colors.text
+                                                        : Colors.textSecondary
+                                                }
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.chatTitle,
+                                                    isActive &&
+                                                        styles.activeChatTitle,
+                                                ]}
+                                                numberOfLines={1}
+                                            >
+                                                {chat.title}
+                                            </Text>
+                                        </Pressable>
 
-                                    <Pressable
-                                        style={styles.deleteButton}
-                                        hitSlop={8}
-                                        onPress={() =>
-                                            handleDeleteChat(
-                                                chat.id,
-                                                chat.title,
-                                            )
-                                        }
-                                    >
-                                        <Icon
-                                            name="delete-bin-line"
-                                            size={16}
-                                            color={Colors.muted}
-                                        />
-                                    </Pressable>
-                                </View>
-                            );
-                        })}
-                    </View>
-                )}
-            </DrawerContentScrollView>
-
+                                        <Pressable
+                                            style={styles.deleteButton}
+                                            hitSlop={8}
+                                            onPress={() =>
+                                                handleDeleteChat(
+                                                    chat.id,
+                                                    chat.title,
+                                                )
+                                            }
+                                        >
+                                            <Icon
+                                                name="delete-bin-line"
+                                                size={16}
+                                                color={Colors.muted}
+                                            />
+                                        </Pressable>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    )}
+                </ScrollView>
+            </View>
             {/* Bottom Navigation */}
-            <View style={styles.footer}>
+            <View
+                style={[
+                    styles.footer,
+                    {
+                        paddingBottom: insets.bottom + 16,
+                    },
+                ]}
+            >
                 <Pressable
                     style={({ pressed }) => [
                         styles.navItem,
@@ -215,22 +230,43 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
 }
 
 const styles = StyleSheet.create({
-    container: {
+    mainContainer: {
         flex: 1,
-        backgroundColor: Colors.white,
-    },
-    scrollContent: {
-        paddingHorizontal: 12,
-        paddingTop: 16,
+        backgroundColor: Colors.primary,
     },
     header: {
-        paddingHorizontal: 8,
-        paddingBottom: 12,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
+        backgroundColor: Colors.primary,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
     },
     brandTitle: {
         fontSize: FontSizes.xl,
         fontFamily: "PlusJakartaSans-SemiBold",
-        color: Colors.text,
+        color: Colors.textInverse,
+    },
+    menuCloseButton: {
+        backgroundColor: Colors.secondary,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 100,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: Colors.surface,
+        borderTopRightRadius: 32,
+        borderTopLeftRadius: 32,
+        borderWidth: 16,
+        borderColor: Colors.surface,
+        overflow: "hidden",
+    },
+    drawerContainer: {
+        flex: 1,
+    },
+    drawerContentContainer: {
+        flexGrow: 1,
     },
     newChatButton: {
         flexDirection: "row",
@@ -304,10 +340,11 @@ const styles = StyleSheet.create({
         borderRadius: 6,
     },
     footer: {
+        backgroundColor: Colors.surface,
         borderTopWidth: 1,
         borderTopColor: Colors.border,
-        paddingTop: 10,
-        paddingHorizontal: 12,
+        paddingTop: 16,
+        paddingHorizontal: 16,
         gap: 4,
     },
     navItem: {

@@ -2,9 +2,11 @@ import CustomDrawer from "@/components/navigation/CustomDrawer";
 import Header from "@/components/ui/Header";
 import { Colors, FontSizes } from "@constants/theme";
 import { Drawer } from "expo-router/drawer";
+import { useWindowDimensions } from "react-native";
 import Icon from "react-native-remix-icon";
 
 export default function RootLayout() {
+    const dimensions = useWindowDimensions();
     return (
         <Drawer
             drawerContent={(props) => <CustomDrawer {...props} />}
@@ -15,6 +17,7 @@ export default function RootLayout() {
                     fontFamily: "PlusJakartaSans-SemiBold",
                     fontSize: FontSizes.sm,
                 },
+                swipeEdgeWidth: dimensions.width,
             }}
         >
             <Drawer.Screen

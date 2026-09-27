@@ -66,9 +66,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.surface,
-        borderRadius: 32,
-        borderBottomRightRadius: 0,
-        borderBottomLeftRadius: 0,
+        borderTopRightRadius: 32,
+        borderTopLeftRadius: 32,
         borderWidth: 16,
         borderBottomWidth: 0,
         borderColor: Colors.surface,

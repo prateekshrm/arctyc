@@ -19,6 +19,7 @@ import {
     loadModel,
     unloadModel,
 } from "@/services/model-manager";
+import { useChatStore } from "@/stores/chat.store";
 import { useDialogStore } from "@/stores/dialog.store";
 import { Model, useModelStore } from "@/stores/models.store";
 import {
@@ -296,8 +297,9 @@ const ModelCard = memo(
             state.models.find((m) => m.id === model.id),
         );
 
-        const activeModelId = useModelStore((state) => state.activeModelId);
+        const newChat = useChatStore((state) => state.newChat);
 
+        const activeModelId = useModelStore((state) => state.activeModelId);
         const isModelLoading = useModelStore((state) => state.isModelLoading);
 
         const showDialog = useDialogStore((state) => state.showDialog);
@@ -568,7 +570,10 @@ const ModelCard = memo(
                             {isCurrentActive ? (
                                 <>
                                     <Pressable
-                                        onPress={() => router.replace("/")}
+                                        onPress={() => {
+                                            newChat();
+                                            router.replace("/");
+                                        }}
                                         style={({ pressed }) => [
                                             styles.chatButton,
                                             pressed && styles.buttonPressed,
@@ -712,9 +717,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.surface,
-        borderRadius: 32,
-        borderBottomRightRadius: 0,
-        borderBottomLeftRadius: 0,
+        borderTopRightRadius: 32,
+        borderTopLeftRadius: 32,
         borderWidth: 16,
         borderBottomWidth: 0,
         borderColor: Colors.surface,
