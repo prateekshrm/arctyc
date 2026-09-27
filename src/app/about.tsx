@@ -1,19 +1,14 @@
 import { Colors, FontSizes } from "@/constants/theme";
 import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
-import {
-    Linking,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import * as Application from "expo-application";
+import * as Linking from "expo-linking";
+
 const APP_NAME = "Arctyc";
-const APP_VERSION = "1.0.0";
 
 const AUTHOR = {
     name: "Prateek Sharma",
@@ -54,7 +49,7 @@ const About = () => {
 
                         <View style={styles.versionPill}>
                             <Text style={styles.versionText}>
-                                Version {APP_VERSION}
+                                Version {Application.nativeApplicationVersion}
                             </Text>
                         </View>
 
