@@ -1,4 +1,5 @@
 import Dialog from "@/components/ui/Dialog";
+import Header from "@/components/ui/Header";
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
 import { DMSans_500Medium } from "@expo-google-fonts/dm-sans/500Medium";
@@ -40,20 +41,28 @@ export default function RootLayout() {
     return (
         <>
             <Dialog />
-
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack
+                screenOptions={{
+                    header: ({ options }) => (
+                        <Header title={options.title ?? ""} />
+                    ),
+                }}
+            >
                 <Stack.Protected guard={!onboarded}>
                     <Stack.Screen
                         name="onboarding"
-                        options={{ title: "Onboarding" }}
+                        options={{ title: "Onboarding", headerShown: false }}
                     />
                 </Stack.Protected>
 
                 <Stack.Protected guard={onboarded}>
                     <Stack.Screen
                         name="(drawer)"
-                        options={{ title: "Drawer" }}
+                        options={{ title: "Drawer", headerShown: false }}
                     />
+                </Stack.Protected>
+                <Stack.Protected guard={onboarded}>
+                    <Stack.Screen name="about" options={{ title: "About" }} />
                 </Stack.Protected>
             </Stack>
         </>

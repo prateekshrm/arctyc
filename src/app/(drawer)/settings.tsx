@@ -1,68 +1,124 @@
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { Colors, FontSizes } from "@constants/theme";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import RemixIcon from "react-native-remix-icon";
+import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const Onboarding = () => {
+type SettingItem = {
+    title: string;
+    description: string;
+    icon: IconName;
+    onPress: () => void;
+};
+
+type SettingsSection = {
+    title: string;
+    items: SettingItem[];
+};
+
+const Settings = () => {
     const insets = useSafeAreaInsets();
+
     const setOnboarded = usePreferencesStore((state) => state.setOnboarded);
+
+    const settingsSections: SettingsSection[] = [
+        {
+            title: "General",
+            items: [
+                {
+                    title: "Onboarding",
+                    description: "View the welcome screen again",
+                    icon: "compass-3-line",
+                    onPress: () => setOnboarded(false),
+                },
+                {
+                    title: "About",
+                    description: "Learn more about Arctyc",
+                    icon: "information-line",
+                    onPress: () => router.push("/about"),
+                },
+            ],
+        },
+    ];
+
     return (
         <View style={styles.mainContainer}>
             <StatusBar style="light" />
+
             <View style={styles.container}>
                 <ScrollView
                     contentContainerStyle={{
                         paddingBottom: insets.bottom + 16,
-                        gap: 8,
+                        gap: 24,
                     }}
                     style={styles.settingContainer}
                     showsVerticalScrollIndicator={false}
                 >
-                    <Text style={styles.title}>General</Text>
-                    <Pressable
-                        style={styles.setting}
-                        onPress={() => setOnboarded(false)}
-                    >
-                        <View style={styles.settingLeft}>
-                            <View style={styles.settingIcon}>
-                                <RemixIcon
-                                    name="compass-3-line"
-                                    size={FontSizes.xxl}
-                                    color={Colors.textSecondary}
-                                    fallback={null}
-                                />
-                            </View>
-                            <View>
-                                <Text style={styles.settingTitle}>
-                                    Onboarding
-                                </Text>
-                                <Text style={styles.settingDescription}>
-                                    View the welcome screen again
-                                </Text>
+                    {settingsSections.map((section) => (
+                        <View key={section.title} style={styles.section}>
+                            <Text style={styles.title}>{section.title}</Text>
+
+                            <View style={styles.sectionItems}>
+                                {section.items.map((setting) => (
+                                    <Pressable
+                                        key={setting.title}
+                                        style={styles.setting}
+                                        onPress={setting.onPress}
+                                    >
+                                        <View style={styles.settingLeft}>
+                                            <View style={styles.settingIcon}>
+                                                <RemixIcon
+                                                    name={setting.icon}
+                                                    size={FontSizes.xxl}
+                                                    color={Colors.textSecondary}
+                                                    fallback={null}
+                                                />
+                                            </View>
+
+                                            <View style={styles.settingContent}>
+                                                <Text
+                                                    style={styles.settingTitle}
+                                                >
+                                                    {setting.title}
+                                                </Text>
+
+                                                <Text
+                                                    style={
+                                                        styles.settingDescription
+                                                    }
+                                                >
+                                                    {setting.description}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <RemixIcon
+                                            name="arrow-right-s-line"
+                                            size={FontSizes.xl}
+                                            color={Colors.text}
+                                            fallback={null}
+                                        />
+                                    </Pressable>
+                                ))}
                             </View>
                         </View>
-                        <RemixIcon
-                            name="arrow-right-s-line"
-                            size={FontSizes.xl}
-                            color={Colors.text}
-                            fallback={null}
-                        />
-                    </Pressable>
+                    ))}
                 </ScrollView>
             </View>
         </View>
     );
 };
 
-export default Onboarding;
+export default Settings;
 
 const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
         backgroundColor: Colors.primary,
     },
+
     container: {
         flex: 1,
         backgroundColor: Colors.surface,
@@ -73,9 +129,15 @@ const styles = StyleSheet.create({
         borderColor: Colors.surface,
         overflow: "hidden",
     },
+
     settingContainer: {
         flex: 1,
     },
+
+    section: {
+        gap: 8,
+    },
+
     title: {
         fontSize: FontSizes.sm,
         color: Colors.textSecondary,
@@ -83,6 +145,11 @@ const styles = StyleSheet.create({
         fontFamily: "DMSans-SemiBold",
         textTransform: "uppercase",
     },
+
+    sectionItems: {
+        gap: 8,
+    },
+
     setting: {
         borderRadius: 16,
         backgroundColor: Colors.surfaceSecondary,
@@ -92,11 +159,14 @@ const styles = StyleSheet.create({
         padding: 10,
         paddingRight: 12,
     },
+
     settingLeft: {
+        flex: 1,
         flexDirection: "row",
         alignItems: "center",
         gap: 10,
     },
+
     settingIcon: {
         backgroundColor: Colors.surface,
         height: 48,
@@ -105,11 +175,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
+
+    settingContent: {
+        flex: 1,
+    },
+
     settingTitle: {
         fontSize: FontSizes.lg,
         color: Colors.text,
         fontFamily: "DMSans-SemiBold",
     },
+
     settingDescription: {
         fontSize: FontSizes.sm,
         color: Colors.textSecondary,

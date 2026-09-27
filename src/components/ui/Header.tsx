@@ -8,9 +8,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type HeaderProps = {
     title: string;
+    inDrawer?: boolean;
 };
 
-const Header = ({ title }: HeaderProps) => {
+const Header = ({ title, inDrawer = false }: HeaderProps) => {
     const insets = useSafeAreaInsets();
     const activeChatId = useChatStore((state) => state.activeChatId);
 
@@ -36,9 +37,19 @@ const Header = ({ title }: HeaderProps) => {
         >
             <Pressable
                 style={styles.menuButton}
-                onPress={() => (navigation as any).openDrawer()}
+                onPress={() => {
+                    if (inDrawer) {
+                        (navigation as any).openDrawer();
+                    } else {
+                        router.back();
+                    }
+                }}
             >
-                <Icon name="menu-5-line" size={20} color={Colors.textInverse} />
+                <Icon
+                    name={inDrawer ? "menu-5-line" : "arrow-left-s-line"}
+                    size={20}
+                    color={Colors.textInverse}
+                />
             </Pressable>
 
             {showActiveModel ? (

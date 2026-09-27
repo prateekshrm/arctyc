@@ -599,8 +599,8 @@ const styles = StyleSheet.create({
     userMessage: {
         maxWidth: "85%",
         paddingHorizontal: 16,
-        paddingVertical: 11,
-        borderRadius: 16,
+        paddingVertical: 8,
+        borderRadius: 999,
         backgroundColor: Colors.primary,
     },
 

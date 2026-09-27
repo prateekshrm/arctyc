@@ -12,7 +12,9 @@ export default function RootLayout() {
             drawerContent={(props) => <CustomDrawer {...props} />}
             screenOptions={{
                 drawerActiveTintColor: Colors.text,
-                header: ({ options }) => <Header title={options.title ?? ""} />,
+                header: ({ options }) => (
+                    <Header title={options.title ?? ""} inDrawer={true} />
+                ),
                 drawerLabelStyle: {
                     fontFamily: "PlusJakartaSans-SemiBold",
                     fontSize: FontSizes.sm,
