@@ -1,4 +1,5 @@
 import { useChatStore } from "@/stores/chat.store";
+import { useLayoutStore } from "@/stores/layout.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { router, useNavigation, usePathname } from "expo-router";
@@ -13,6 +14,7 @@ type HeaderProps = {
 
 const Header = ({ title, inDrawer = false }: HeaderProps) => {
     const insets = useSafeAreaInsets();
+    const setHeaderHeight = useLayoutStore((state) => state.setHeaderHeight);
     const activeChatId = useChatStore((state) => state.activeChatId);
 
     const activeModelId = useModelStore((state) => state.activeModelId);
@@ -28,6 +30,13 @@ const Header = ({ title, inDrawer = false }: HeaderProps) => {
 
     return (
         <View
+            onLayout={(e) => {
+                const height = Math.round(e.nativeEvent.layout.height);
+                if (height > 0) {
+                    setHeaderHeight(height);
+                    console.log("Header Height", height);
+                }
+            }}
             style={[
                 styles.headerContainer,
                 {

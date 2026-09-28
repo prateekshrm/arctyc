@@ -6,6 +6,7 @@ import {
 } from "@/services/chat-db";
 import { getActiveLanguageModel } from "@/services/model-manager";
 import { useChatStore } from "@/stores/chat.store";
+import { useLayoutStore } from "@/stores/layout.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
@@ -13,6 +14,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import {
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -36,6 +38,10 @@ export default function Index() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
+    const measuredHeaderHeight = useLayoutStore((state) => state.headerHeight);
+    const headerHeight =
+        measuredHeaderHeight > 0 ? measuredHeaderHeight : insets.top + 64;
+
     const activeModel = useModelStore((state) => state.activeModelId);
 
     const activeChatId = useChatStore((state) => state.activeChatId);
@@ -43,7 +49,8 @@ export default function Index() {
     const loadChats = useChatStore((state) => state.loadChats);
 
     const [value, setValue] = useState("");
-    const [inputHeight, setInputHeight] = useState(24);
+    const [inputHeight, setInputHeight] = useState(56);
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
     const [messages, setMessages] = useState<Message[]>([]);
     const [thinking, setThinking] = useState(false);
@@ -97,6 +104,31 @@ export default function Index() {
             });
         });
     }, [messages, thinking]);
+
+    useEffect(() => {
+        const showEvent =
+            Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+        const hideEvent =
+            Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+        const showSubscription = Keyboard.addListener(showEvent, () => {
+            setIsKeyboardVisible(true);
+            requestAnimationFrame(() => {
+                scrollViewRef.current?.scrollToEnd({
+                    animated: true,
+                });
+            });
+        });
+
+        const hideSubscription = Keyboard.addListener(hideEvent, () => {
+            setIsKeyboardVisible(false);
+        });
+
+        return () => {
+            showSubscription.remove();
+            hideSubscription.remove();
+        };
+    }, []);
 
     const sendMessage = async () => {
         const prompt = value.trim();
@@ -160,7 +192,7 @@ export default function Index() {
         setMessages((current) => [...current, userMessage, assistantMessage]);
 
         setValue("");
-        setInputHeight(24);
+        setInputHeight(56);
 
         setThinking(true);
         setGenerating(true);
@@ -344,10 +376,12 @@ export default function Index() {
         <KeyboardAvoidingView
             style={styles.mainContainer}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={headerHeight}
         >
             <StatusBar style="light" />
 
             <View style={styles.container}>
+                {/* Chat */}
                 {activeModel || activeChatId ? (
                     <ScrollView
                         ref={scrollViewRef}
@@ -355,6 +389,7 @@ export default function Index() {
                         contentContainerStyle={styles.chatContentContainer}
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
                     >
                         {messages.length === 0 && !thinking
                             ? renderEmptyChatState()
@@ -382,24 +417,20 @@ export default function Index() {
                                                       : styles.assistantMessage
                                               }
                                           >
-                                              <View>
-                                                  {isUser ? (
-                                                      <Text
-                                                          style={[
-                                                              styles.messageText,
-                                                              styles.userMessageText,
-                                                          ]}
-                                                      >
-                                                          {message.content}
-                                                      </Text>
-                                                  ) : (
-                                                      <Markdown
-                                                          markdown={
-                                                              message.content
-                                                          }
-                                                      />
-                                                  )}
-                                              </View>
+                                              {isUser ? (
+                                                  <Text
+                                                      style={[
+                                                          styles.messageText,
+                                                          styles.userMessageText,
+                                                      ]}
+                                                  >
+                                                      {message.content}
+                                                  </Text>
+                                              ) : (
+                                                  <Markdown
+                                                      markdown={message.content}
+                                                  />
+                                              )}
                                           </View>
                                       </View>
                                   );
@@ -429,48 +460,47 @@ export default function Index() {
                 ) : (
                     renderNoModelState()
                 )}
-            </View>
 
-            <View
-                style={[
-                    styles.inputArea,
-                    {
-                        paddingBottom: insets.bottom + 16,
-                    },
-                ]}
-            >
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        multiline
-                        placeholder={
-                            activeModel
-                                ? "Ask anything"
-                                : "Load a model to start chatting"
-                        }
-                        placeholderTextColor={Colors.textMuted}
-                        value={value}
-                        onChangeText={setValue}
-                        textAlignVertical="top"
-                        returnKeyType="default"
-                        editable={!!activeModel && !generating}
-                        style={[
-                            styles.input,
-                            {
-                                height: inputHeight,
-                            },
-                        ]}
-                        onContentSizeChange={(event) => {
-                            const contentHeight =
-                                event.nativeEvent.contentSize.height;
+                {/* Input */}
+                <View
+                    style={[
+                        styles.inputArea,
+                        {
+                            paddingBottom: isKeyboardVisible
+                                ? 16
+                                : insets.bottom + 16,
+                        },
+                    ]}
+                >
+                    <View style={styles.inputWrapper}>
+                        <TextInput
+                            multiline
+                            placeholder={
+                                activeModel
+                                    ? "Ask anything"
+                                    : "Load a model to start chatting"
+                            }
+                            placeholderTextColor={Colors.textMuted}
+                            value={value}
+                            onChangeText={setValue}
+                            textAlignVertical="top"
+                            returnKeyType="default"
+                            editable={!!activeModel && !generating}
+                            style={[
+                                styles.input,
+                                {
+                                    height: Math.max(56, inputHeight),
+                                },
+                            ]}
+                            onContentSizeChange={(event) => {
+                                const contentHeight =
+                                    event.nativeEvent.contentSize.height;
 
-                            setInputHeight(
-                                Math.min(100, Math.max(24, contentHeight)),
-                            );
-                        }}
-                    />
-
-                    <View style={styles.actionsContainer}>
-                        <View style={styles.leftActions} />
+                                setInputHeight(
+                                    Math.min(120, Math.max(56, contentHeight)),
+                                );
+                            }}
+                        />
 
                         <Pressable
                             style={[
@@ -489,7 +519,7 @@ export default function Index() {
                                     generating ? "stop-fill" : "arrow-up-line"
                                 }
                                 size={FontSizes.xl}
-                                color={Colors.buttonPrimaryText}
+                                color={Colors.text}
                             />
                         </Pressable>
                     </View>
@@ -511,6 +541,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 32,
         borderTopLeftRadius: 32,
         borderWidth: 16,
+        borderBottomWidth: 0,
         borderColor: Colors.surface,
         overflow: "hidden",
     },
@@ -570,13 +601,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        backgroundColor: Colors.buttonPrimary,
+        backgroundColor: Colors.buttonSecondary,
     },
 
     modelsButtonText: {
         fontSize: FontSizes.md,
         fontFamily: "DMSans-SemiBold",
-        color: Colors.buttonPrimaryText,
+        color: Colors.buttonSecondaryText,
     },
 
     /*
@@ -650,49 +681,41 @@ const styles = StyleSheet.create({
      */
 
     inputArea: {
-        paddingHorizontal: 16,
+        width: "100%",
+        flexShrink: 0,
         backgroundColor: Colors.surface,
+        paddingTop: 16,
     },
 
-    inputContainer: {
+    inputWrapper: {
         width: "100%",
-        minHeight: 96,
-        padding: 16,
-        backgroundColor: Colors.surfaceSecondary,
-        borderRadius: 24,
+        position: "relative",
+        borderRadius: 28,
+        overflow: "hidden",
     },
 
     input: {
         width: "100%",
-        minHeight: 24,
+        minHeight: 56,
+        maxHeight: 120,
         fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
-        lineHeight: 22,
-        color: Colors.text,
-        paddingTop: 0,
-        paddingBottom: 0,
-    },
-
-    actionsContainer: {
-        height: 38,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginTop: 8,
-    },
-
-    leftActions: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
+        lineHeight: 24,
+        color: Colors.textInverse,
+        paddingVertical: 16,
+        paddingLeft: 16,
+        paddingRight: 56,
+        backgroundColor: Colors.primary,
     },
 
     sendButton: {
-        height: 38,
-        width: 38,
+        position: "absolute",
+        right: 10,
+        bottom: 10,
+        height: 36,
+        width: 36,
         borderRadius: 20,
-        backgroundColor: Colors.buttonPrimary,
+        backgroundColor: Colors.surface,
         alignItems: "center",
         justifyContent: "center",
     },
