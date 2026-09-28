@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
         fontSize: FontSizes.display,
         color: Colors.textInverse,
         marginBottom: 8,
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
     },
 
     description: {

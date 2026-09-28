@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     appName: {
         fontSize: FontSizes.xxl,
         color: Colors.text,
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
     },
 
     versionPill: {

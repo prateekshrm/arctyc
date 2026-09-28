@@ -65,6 +65,7 @@ export default function Index() {
         if (loadedChatIdRef.current === activeChatId) {
             return;
         }
+        setValue("");
         loadedChatIdRef.current = activeChatId;
 
         if (abortControllerRef.current) {
@@ -113,11 +114,6 @@ export default function Index() {
 
         const showSubscription = Keyboard.addListener(showEvent, () => {
             setIsKeyboardVisible(true);
-            requestAnimationFrame(() => {
-                scrollViewRef.current?.scrollToEnd({
-                    animated: true,
-                });
-            });
         });
 
         const hideSubscription = Keyboard.addListener(hideEvent, () => {
@@ -389,7 +385,6 @@ export default function Index() {
                         contentContainerStyle={styles.chatContentContainer}
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
-                        keyboardDismissMode="on-drag"
                     >
                         {messages.length === 0 && !thinking
                             ? renderEmptyChatState()
@@ -483,7 +478,7 @@ export default function Index() {
                             placeholderTextColor={Colors.textMuted}
                             value={value}
                             onChangeText={setValue}
-                            textAlignVertical="top"
+                            // textAlignVertical="top"
                             returnKeyType="default"
                             editable={!!activeModel && !generating}
                             style={[
@@ -497,7 +492,7 @@ export default function Index() {
                                     event.nativeEvent.contentSize.height;
 
                                 setInputHeight(
-                                    Math.min(120, Math.max(56, contentHeight)),
+                                    Math.min(152, Math.max(56, contentHeight)),
                                 );
                             }}
                         />
@@ -631,7 +626,7 @@ const styles = StyleSheet.create({
         maxWidth: "85%",
         paddingHorizontal: 16,
         paddingVertical: 8,
-        borderRadius: 999,
+        borderRadius: 20,
         backgroundColor: Colors.primary,
     },
 
@@ -668,7 +663,7 @@ const styles = StyleSheet.create({
     messageText: {
         fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
-        lineHeight: 23,
+        lineHeight: 22,
         color: Colors.text,
     },
 
@@ -697,13 +692,13 @@ const styles = StyleSheet.create({
     input: {
         width: "100%",
         minHeight: 56,
-        maxHeight: 120,
+        maxHeight: 152,
         fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
         lineHeight: 24,
         color: Colors.textInverse,
         paddingVertical: 16,
-        paddingLeft: 16,
+        paddingLeft: 20,
         paddingRight: 56,
         backgroundColor: Colors.primary,
     },

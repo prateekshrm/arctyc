@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     },
     brandTitle: {
         fontSize: FontSizes.xl,
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
         color: Colors.textInverse,
     },
     menuCloseButton: {
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: FontSizes.xs,
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
         color: Colors.textMuted,
         textTransform: "uppercase",
         letterSpacing: 0.8,

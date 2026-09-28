@@ -16,7 +16,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 // ─────────────────────────────
 
                 h1: {
-                    fontFamily: "DMSans-Bold",
+                    fontFamily: "Sora-SemiBold",
                     fontSize: FontSizes.xxl,
                     lineHeight: FontSizes.xxl * 1.25,
                     marginTop: 12,
@@ -24,7 +24,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 },
 
                 h2: {
-                    fontFamily: "DMSans-Bold",
+                    fontFamily: "Sora-SemiBold",
                     fontSize: FontSizes.xl,
                     lineHeight: FontSizes.xl * 1.3,
                     marginTop: 10,
@@ -32,7 +32,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 },
 
                 h3: {
-                    fontFamily: "DMSans-SemiBold",
+                    fontFamily: "Sora-SemiBold",
                     fontSize: FontSizes.lg,
                     lineHeight: FontSizes.lg * 1.35,
                     marginTop: 8,
@@ -40,7 +40,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 },
 
                 h4: {
-                    fontFamily: "DMSans-SemiBold",
+                    fontFamily: "Sora-Medium",
                     fontSize: FontSizes.md,
                     lineHeight: FontSizes.md * 1.4,
                     marginTop: 6,
@@ -48,7 +48,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 },
 
                 h5: {
-                    fontFamily: "DMSans-Medium",
+                    fontFamily: "Sora-Medium",
                     fontSize: FontSizes.md,
                     lineHeight: FontSizes.md * 1.4,
                     marginTop: 6,
@@ -56,7 +56,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 },
 
                 h6: {
-                    fontFamily: "DMSans-Medium",
+                    fontFamily: "Sora-Medium",
                     fontSize: FontSizes.md,
                     lineHeight: FontSizes.md * 1.4,
                     marginTop: 6,

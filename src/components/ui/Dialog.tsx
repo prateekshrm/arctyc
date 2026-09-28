@@ -42,7 +42,7 @@ export default function Dialog() {
                     <Text
                         style={{
                             fontSize: FontSizes.lg,
-                            fontFamily: "PlusJakartaSans-SemiBold",
+                            fontFamily: "Sora-SemiBold",
                         }}
                     >
                         {title}

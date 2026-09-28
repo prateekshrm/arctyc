@@ -34,7 +34,6 @@ const Header = ({ title, inDrawer = false }: HeaderProps) => {
                 const height = Math.round(e.nativeEvent.layout.height);
                 if (height > 0) {
                     setHeaderHeight(height);
-                    console.log("Header Height", height);
                 }
             }}
             style={[
@@ -145,6 +144,6 @@ const styles = StyleSheet.create({
     text: {
         fontSize: FontSizes.xl,
         color: Colors.textInverse,
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
     },
 });

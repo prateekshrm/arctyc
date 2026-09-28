@@ -5,7 +5,8 @@ import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
 import { DMSans_500Medium } from "@expo-google-fonts/dm-sans/500Medium";
 import { DMSans_600SemiBold } from "@expo-google-fonts/dm-sans/600SemiBold";
 import { DMSans_700Bold } from "@expo-google-fonts/dm-sans/700Bold";
-import { PlusJakartaSans_600SemiBold } from "@expo-google-fonts/plus-jakarta-sans/600SemiBold";
+import { Sora_500Medium } from "@expo-google-fonts/sora/500Medium";
+import { Sora_600SemiBold } from "@expo-google-fonts/sora/600SemiBold";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -21,7 +22,8 @@ export default function RootLayout() {
     );
 
     let [fontsLoaded] = useFonts({
-        "PlusJakartaSans-SemiBold": PlusJakartaSans_600SemiBold,
+        "Sora-Medium": Sora_500Medium,
+        "Sora-SemiBold": Sora_600SemiBold,
         "DMSans-Regular": DMSans_400Regular,
         "DMSans-Medium": DMSans_500Medium,
         "DMSans-SemiBold": DMSans_600SemiBold,

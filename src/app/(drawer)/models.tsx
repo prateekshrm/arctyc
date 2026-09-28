@@ -769,7 +769,7 @@ const styles = StyleSheet.create({
     },
 
     systemInfoValue: {
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
         fontSize: FontSizes.sm,
         color: Colors.text,
         marginTop: 1,
@@ -822,7 +822,7 @@ const styles = StyleSheet.create({
     },
 
     sectionTitleBig: {
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
         fontSize: FontSizes.xl,
         color: Colors.text,
         letterSpacing: -0.4,
@@ -871,7 +871,7 @@ const styles = StyleSheet.create({
     },
 
     modelName: {
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
         fontSize: FontSizes.md,
         color: Colors.text,
         letterSpacing: -0.3,
@@ -961,7 +961,7 @@ const styles = StyleSheet.create({
     },
 
     statValue: {
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
         fontSize: FontSizes.xs,
         color: Colors.text,
         marginTop: 2,
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
     },
 
     progressPercentage: {
-        fontFamily: "PlusJakartaSans-SemiBold",
+        fontFamily: "DMSans-SemiBold",
         fontSize: FontSizes.xs,
         color: Colors.text,
     },
