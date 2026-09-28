@@ -93,18 +93,28 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                         ]}
                         onPress={handleNewChat}
                     >
-                        <Icon name="add-line" size={20} color={Colors.text} />
+                        <Icon
+                            name="edit-box-line"
+                            size={FontSizes.xl}
+                            color={Colors.text}
+                        />
                         <Text style={styles.newChatText}>New Chat</Text>
                     </Pressable>
 
                     {/* Chat History Section */}
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Recent Chats</Text>
+                        <Text style={styles.sectionTitle}>Recent</Text>
                     </View>
 
                     {chats.length === 0 ? (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>No saved chats</Text>
+                            <Text style={styles.emptyTextHead}>
+                                No saved chats
+                            </Text>
+                            <Text style={styles.emptyTextDescription}>
+                                Recent chats will appear here so you can
+                                continue them later
+                            </Text>
                         </View>
                     ) : (
                         <View style={styles.chatList}>
@@ -295,10 +305,16 @@ const styles = StyleSheet.create({
         letterSpacing: 0.8,
     },
     emptyContainer: {
-        paddingVertical: 24,
-        alignItems: "center",
+        paddingTop: 8,
+        paddingLeft: 8,
     },
-    emptyText: {
+    emptyTextHead: {
+        fontSize: FontSizes.lg,
+        color: Colors.text,
+        fontFamily: "DMSans-Medium",
+    },
+    emptyTextDescription: {
+        marginTop: 4,
         fontSize: FontSizes.sm,
         color: Colors.textMuted,
         fontFamily: "DMSans-Regular",

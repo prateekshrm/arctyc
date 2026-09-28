@@ -757,7 +757,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 8,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.surfaceSecondary,
         alignItems: "center",
         justifyContent: "center",
     },
@@ -1013,7 +1013,7 @@ const styles = StyleSheet.create({
     progressBarTrack: {
         height: 6,
         borderRadius: 999,
-        backgroundColor: Colors.surfaceSecondary,
+        backgroundColor: Colors.surface,
         overflow: "hidden",
     },
 

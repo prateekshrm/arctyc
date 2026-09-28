@@ -47,7 +47,7 @@ const Header = ({ title, inDrawer = false }: HeaderProps) => {
             >
                 <Icon
                     name={inDrawer ? "menu-5-line" : "arrow-left-s-line"}
-                    size={20}
+                    size={FontSizes.xl}
                     color={Colors.textInverse}
                 />
             </Pressable>
@@ -79,7 +79,7 @@ const Header = ({ title, inDrawer = false }: HeaderProps) => {
                 >
                     <Icon
                         name="edit-box-line"
-                        size={20}
+                        size={FontSizes.xl}
                         color={Colors.textInverse}
                     />
                 </Pressable>
