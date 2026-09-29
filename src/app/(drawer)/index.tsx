@@ -11,6 +11,7 @@ import { useLayoutStore } from "@/stores/layout.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
@@ -24,6 +25,7 @@ import {
     StyleSheet,
     Text,
     TextInput,
+    ToastAndroid,
     View,
 } from "react-native";
 import RemixIcon from "react-native-remix-icon";
@@ -361,6 +363,11 @@ export default function Index() {
         });
     };
 
+    const handleCopyMessage = async (message: string) => {
+        await Clipboard.setStringAsync(message);
+        ToastAndroid.show("Copied!", ToastAndroid.SHORT);
+    };
+
     const renderNoModelState = () => {
         return (
             <View style={styles.emptyStateContainer}>
@@ -494,6 +501,27 @@ export default function Index() {
                                                   />
                                               )}
                                           </View>
+                                          <Pressable
+                                              style={[
+                                                  styles.messageCopyButton,
+                                                  {
+                                                      alignSelf: isUser
+                                                          ? "flex-end"
+                                                          : "flex-start",
+                                                  },
+                                              ]}
+                                              onPress={() =>
+                                                  handleCopyMessage(
+                                                      message.content,
+                                                  )
+                                              }
+                                          >
+                                              <RemixIcon
+                                                  name="file-copy-line"
+                                                  size={FontSizes.sm}
+                                                  color={Colors.textSecondary}
+                                              />
+                                          </Pressable>
                                       </View>
                                   );
                               })}
@@ -721,6 +749,15 @@ const styles = StyleSheet.create({
 
     assistantMessage: {
         width: "100%",
+    },
+
+    messageCopyButton: {
+        marginTop: 12,
+        backgroundColor: Colors.surfaceSecondary,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 999,
+        gap: 4,
     },
 
     thinkingMessage: {
