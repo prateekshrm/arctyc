@@ -119,3 +119,14 @@ export const updateMessageContent = async (
         id,
     ]);
 };
+
+export const deleteMessages = async (ids: string[]): Promise<void> => {
+    if (ids.length === 0) return;
+    const db = getDatabase();
+    const placeholders = ids.map(() => "?").join(",");
+    await db.runAsync(
+        `DELETE FROM messages WHERE id IN (${placeholders})`,
+        ids,
+    );
+};
+

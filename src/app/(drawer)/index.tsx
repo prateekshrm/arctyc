@@ -1,5 +1,6 @@
 import Markdown from "@/components/ui/Markdown";
 import {
+    deleteMessages,
     getMessages,
     saveMessage,
     updateMessageContent,
@@ -139,69 +140,16 @@ export default function Index() {
         };
     }, []);
 
-    const sendMessage = async () => {
-        const prompt = value.trim();
-
-        if (!prompt || thinking || generating) {
-            return;
-        }
-
+    const streamAssistantResponse = async (
+        conversation: Message[],
+        assistantMessageId: string,
+    ) => {
         const model = getActiveLanguageModel();
 
         if (!model) {
             console.log("No active model");
             return;
         }
-
-        console.log("User prompt:", prompt);
-
-        // Ensure active chat exists or create one
-        let currentChatId = activeChatId;
-        if (!currentChatId) {
-            const newChatId = `chat_${Date.now()}`;
-            const title =
-                prompt.length > 35 ? `${prompt.slice(0, 35)}...` : prompt;
-            loadedChatIdRef.current = newChatId;
-            await createChat(newChatId, title);
-            currentChatId = newChatId;
-        }
-
-        const userMessage: Message = {
-            id: `${Date.now()}-user`,
-            role: "user",
-            content: prompt,
-        };
-
-        const assistantMessageId = `${Date.now()}-assistant`;
-
-        const assistantMessage: Message = {
-            id: assistantMessageId,
-            role: "assistant",
-            content: "",
-            status: "generating",
-        };
-
-        // Persist user and placeholder assistant message
-        await saveMessage(currentChatId, {
-            id: userMessage.id,
-            role: userMessage.role,
-            content: userMessage.content,
-        });
-
-        await saveMessage(currentChatId, {
-            id: assistantMessageId,
-            role: "assistant",
-            content: "",
-        });
-
-        // Capture the conversation before adding the empty assistant
-        // message. This is the context sent to the model.
-        const conversation = [...messages, userMessage];
-
-        setMessages((current) => [...current, userMessage, assistantMessage]);
-
-        setValue("");
-        setInputHeight(56);
 
         setThinking(true);
         setGenerating(true);
@@ -326,6 +274,73 @@ export default function Index() {
         }
     };
 
+    const sendMessage = async () => {
+        const prompt = value.trim();
+
+        if (!prompt || thinking || generating) {
+            return;
+        }
+
+        const model = getActiveLanguageModel();
+
+        if (!model) {
+            console.log("No active model");
+            return;
+        }
+
+        console.log("User prompt:", prompt);
+
+        // Ensure active chat exists or create one
+        let currentChatId = activeChatId;
+        if (!currentChatId) {
+            const newChatId = `chat_${Date.now()}`;
+            const title =
+                prompt.length > 35 ? `${prompt.slice(0, 35)}...` : prompt;
+            loadedChatIdRef.current = newChatId;
+            await createChat(newChatId, title);
+            currentChatId = newChatId;
+        }
+
+        const userMessage: Message = {
+            id: `${Date.now()}-user`,
+            role: "user",
+            content: prompt,
+        };
+
+        const assistantMessageId = `${Date.now()}-assistant`;
+
+        const assistantMessage: Message = {
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+            status: "generating",
+        };
+
+        // Persist user and placeholder assistant message
+        await saveMessage(currentChatId, {
+            id: userMessage.id,
+            role: userMessage.role,
+            content: userMessage.content,
+        });
+
+        await saveMessage(currentChatId, {
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+        });
+
+        // Capture the conversation before adding the empty assistant
+        // message. This is the context sent to the model.
+        const conversation = [...messages, userMessage];
+
+        setMessages((current) => [...current, userMessage, assistantMessage]);
+
+        setValue("");
+        setInputHeight(56);
+
+        await streamAssistantResponse(conversation, assistantMessageId);
+    };
+
     const stopGeneration = () => {
         abortControllerRef.current?.abort();
     };
@@ -366,6 +381,55 @@ export default function Index() {
     const handleCopyMessage = async (message: string) => {
         await Clipboard.setStringAsync(message);
         ToastAndroid.show("Copied!", ToastAndroid.SHORT);
+    };
+
+    const handleRegenerateMessage = async (messageId?: string) => {
+        if (thinking || generating || !activeChatId) {
+            return;
+        }
+
+        const model = getActiveLanguageModel();
+        if (!model) {
+            console.log("No active model");
+            ToastAndroid.show("No active model", ToastAndroid.SHORT);
+            return;
+        }
+
+        const targetIndex = messageId
+            ? messages.findIndex((m) => m.id === messageId)
+            : messages.length - 1;
+
+        if (targetIndex === -1) {
+            return;
+        }
+
+        // Delete all messages from that message onwards
+        const messagesToDelete = messages.slice(targetIndex);
+        const conversation = messages.slice(0, targetIndex);
+
+        if (conversation.length === 0) {
+            return;
+        }
+
+        await deleteMessages(messagesToDelete.map((m) => m.id));
+
+        const assistantMessageId = `${Date.now()}-assistant`;
+        const assistantMessage: Message = {
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+            status: "generating",
+        };
+
+        await saveMessage(activeChatId, {
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+        });
+
+        setMessages([...conversation, assistantMessage]);
+
+        await streamAssistantResponse(conversation, assistantMessageId);
     };
 
     const renderNoModelState = () => {
@@ -501,27 +565,89 @@ export default function Index() {
                                                   />
                                               )}
                                           </View>
-                                          <Pressable
-                                              style={[
-                                                  styles.messageCopyButton,
-                                                  {
-                                                      alignSelf: isUser
-                                                          ? "flex-end"
-                                                          : "flex-start",
-                                                  },
-                                              ]}
-                                              onPress={() =>
-                                                  handleCopyMessage(
-                                                      message.content,
+                                          <View style={styles.messageOptions}>
+                                              {isUser ? (
+                                                  <Pressable
+                                                      style={[
+                                                          styles.messageOptionButton,
+                                                          {
+                                                              alignSelf: isUser
+                                                                  ? "flex-end"
+                                                                  : "flex-start",
+                                                          },
+                                                      ]}
+                                                      onPress={() =>
+                                                          handleCopyMessage(
+                                                              message.content,
+                                                          )
+                                                      }
+                                                  >
+                                                      <RemixIcon
+                                                          name="file-copy-line"
+                                                          size={FontSizes.sm}
+                                                          color={
+                                                              Colors.textSecondary
+                                                          }
+                                                      />
+                                                  </Pressable>
+                                              ) : (
+                                                  (message.status ==
+                                                      "complete" ||
+                                                      message.status ==
+                                                          "stopped") && (
+                                                      <>
+                                                          <Pressable
+                                                              style={[
+                                                                  styles.messageOptionButton,
+                                                                  {
+                                                                      alignSelf:
+                                                                          isUser
+                                                                              ? "flex-end"
+                                                                              : "flex-start",
+                                                                  },
+                                                              ]}
+                                                              onPress={() =>
+                                                                  handleCopyMessage(
+                                                                      message.content,
+                                                                  )
+                                                              }
+                                                          >
+                                                              <RemixIcon
+                                                                  name="file-copy-line"
+                                                                  size={
+                                                                      FontSizes.sm
+                                                                  }
+                                                                  color={
+                                                                      Colors.textSecondary
+                                                                  }
+                                                              />
+                                                          </Pressable>
+                                                          {!generating && (
+                                                              <Pressable
+                                                                  style={
+                                                                      styles.messageOptionButton
+                                                                  }
+                                                                  onPress={() =>
+                                                                      handleRegenerateMessage(
+                                                                          message.id,
+                                                                      )
+                                                                  }
+                                                              >
+                                                                  <RemixIcon
+                                                                      name="reset-left-line"
+                                                                      size={
+                                                                          FontSizes.sm
+                                                                      }
+                                                                      color={
+                                                                          Colors.textSecondary
+                                                                      }
+                                                                  />
+                                                              </Pressable>
+                                                          )}
+                                                      </>
                                                   )
-                                              }
-                                          >
-                                              <RemixIcon
-                                                  name="file-copy-line"
-                                                  size={FontSizes.sm}
-                                                  color={Colors.textSecondary}
-                                              />
-                                          </Pressable>
+                                              )}
+                                          </View>
                                       </View>
                                   );
                               })}
@@ -751,7 +877,12 @@ const styles = StyleSheet.create({
         width: "100%",
     },
 
-    messageCopyButton: {
+    messageOptions: {
+        flexDirection: "row",
+        gap: 8,
+    },
+
+    messageOptionButton: {
         marginTop: 12,
         backgroundColor: Colors.surfaceSecondary,
         paddingVertical: 8,
