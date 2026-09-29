@@ -19,7 +19,6 @@ import {
     loadModel,
     unloadModel,
 } from "@/services/model-manager";
-import { useChatStore } from "@/stores/chat.store";
 import { useDialogStore } from "@/stores/dialog.store";
 import { Model, useModelStore } from "@/stores/models.store";
 import {
@@ -297,8 +296,6 @@ const ModelCard = memo(
             state.models.find((m) => m.id === model.id),
         );
 
-        const newChat = useChatStore((state) => state.newChat);
-
         const activeModelId = useModelStore((state) => state.activeModelId);
         const isModelLoading = useModelStore((state) => state.isModelLoading);
 
@@ -571,7 +568,6 @@ const ModelCard = memo(
                                 <>
                                     <Pressable
                                         onPress={() => {
-                                            newChat();
                                             router.replace("/");
                                         }}
                                         style={({ pressed }) => [

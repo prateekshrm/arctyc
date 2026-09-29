@@ -2,7 +2,7 @@ import CustomDrawer from "@/components/navigation/CustomDrawer";
 import Header from "@/components/ui/Header";
 import { Colors, FontSizes } from "@constants/theme";
 import { Drawer } from "expo-router/drawer";
-import Icon from "react-native-remix-icon";
+import RemixIcon from "react-native-remix-icon";
 
 export default function RootLayout() {
     return (
@@ -26,7 +26,7 @@ export default function RootLayout() {
                     title: "Arctyc",
                     drawerLabel: "Chat",
                     drawerIcon: ({ focused, color, size }) => (
-                        <Icon
+                        <RemixIcon
                             name={focused ? "message-3-fill" : "message-3-line"}
                             size={size}
                             color={color as any}
@@ -40,7 +40,7 @@ export default function RootLayout() {
                     title: "Models",
                     drawerLabel: "Models",
                     drawerIcon: ({ focused, color, size }) => (
-                        <Icon
+                        <RemixIcon
                             name={focused ? "stack-fill" : "stack-line"}
                             size={size}
                             color={color as any}
@@ -54,7 +54,7 @@ export default function RootLayout() {
                     title: "Settings",
                     drawerLabel: "Settings",
                     drawerIcon: ({ focused, color, size }) => (
-                        <Icon
+                        <RemixIcon
                             name={
                                 focused ? "settings-4-fill" : "settings-4-line"
                             }

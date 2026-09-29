@@ -5,7 +5,7 @@ import { router, usePathname } from "expo-router";
 import { DrawerContentComponentProps } from "expo-router/drawer";
 import { useEffect } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import Icon from "react-native-remix-icon";
+import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CustomDrawer(props: DrawerContentComponentProps) {
@@ -72,7 +72,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                     style={styles.menuCloseButton}
                     onPress={() => props.navigation.closeDrawer()}
                 >
-                    <Icon
+                    <RemixIcon
                         name="close-line"
                         size={20}
                         color={Colors.textInverse}
@@ -93,7 +93,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                         ]}
                         onPress={handleNewChat}
                     >
-                        <Icon
+                        <RemixIcon
                             name="edit-box-line"
                             size={FontSizes.xl}
                             color={Colors.text}
@@ -138,7 +138,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                                                 handleSelectChat(chat.id)
                                             }
                                         >
-                                            <Icon
+                                            <RemixIcon
                                                 name="message-3-line"
                                                 size={18}
                                                 color={
@@ -169,7 +169,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                                                 )
                                             }
                                         >
-                                            <Icon
+                                            <RemixIcon
                                                 name="delete-bin-line"
                                                 size={16}
                                                 color={Colors.muted}
@@ -202,7 +202,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                         props.navigation.closeDrawer();
                     }}
                 >
-                    <Icon
+                    <RemixIcon
                         name={
                             pathname === "/models" ? "stack-fill" : "stack-line"
                         }
@@ -223,7 +223,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                         props.navigation.closeDrawer();
                     }}
                 >
-                    <Icon
+                    <RemixIcon
                         name={
                             pathname === "/settings"
                                 ? "settings-4-fill"

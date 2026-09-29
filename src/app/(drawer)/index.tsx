@@ -6,6 +6,7 @@ import {
 } from "@/services/chat-db";
 import { getActiveLanguageModel } from "@/services/model-manager";
 import { useChatStore } from "@/stores/chat.store";
+import { useDialogStore } from "@/stores/dialog.store";
 import { useLayoutStore } from "@/stores/layout.store";
 import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
@@ -19,6 +20,7 @@ import {
     Platform,
     Pressable,
     ScrollView,
+    Share,
     StyleSheet,
     Text,
     TextInput,
@@ -38,15 +40,23 @@ export default function Index() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
+    const showDialog = useDialogStore((state) => state.showDialog);
+
     const measuredHeaderHeight = useLayoutStore((state) => state.headerHeight);
     const headerHeight =
         measuredHeaderHeight > 0 ? measuredHeaderHeight : insets.top + 64;
 
     const activeModel = useModelStore((state) => state.activeModelId);
 
+    const chatOptionsOpen = useLayoutStore((state) => state.chatOptionsOpen);
+    const setChatOptionsOpen = useLayoutStore(
+        (state) => state.setChatOptionsOpen,
+    );
+
     const activeChatId = useChatStore((state) => state.activeChatId);
     const createChat = useChatStore((state) => state.createChat);
     const loadChats = useChatStore((state) => state.loadChats);
+    const deleteChat = useChatStore((state) => state.deleteChat);
 
     const [value, setValue] = useState("");
     const [inputHeight, setInputHeight] = useState(56);
@@ -66,6 +76,7 @@ export default function Index() {
             return;
         }
         setValue("");
+        chatOptionsOpen && setChatOptionsOpen(false);
         loadedChatIdRef.current = activeChatId;
 
         if (abortControllerRef.current) {
@@ -321,6 +332,35 @@ export default function Index() {
         router.push("/models");
     };
 
+    const handleShareChat = async () => {
+        let conversation = messages.map(({ role, content }) => ({
+            role,
+            content,
+        }));
+        try {
+            await Share.share({
+                message: JSON.stringify(conversation),
+            });
+        } catch {
+            // User dismissed the share sheet; nothing to do.
+        }
+    };
+
+    const handleDeleteChat = async () => {
+        showDialog({
+            title: "Delete Chat",
+            message: "Are you sure you want to delete this chat?",
+            confirmButton: {
+                label: "Delete",
+                variant: "destructive",
+                onPress: () => deleteChat(activeChatId as string),
+            },
+            dismissButton: {
+                label: "Cancel",
+            },
+        });
+    };
+
     const renderNoModelState = () => {
         return (
             <View style={styles.emptyStateContainer}>
@@ -375,6 +415,33 @@ export default function Index() {
             keyboardVerticalOffset={headerHeight}
         >
             <StatusBar style="light" />
+
+            {activeChatId && chatOptionsOpen ? (
+                <View style={styles.chatOptions}>
+                    <Pressable
+                        style={styles.chatOption}
+                        onPress={() => handleShareChat()}
+                    >
+                        <RemixIcon
+                            name="share-2-line"
+                            size={FontSizes.md}
+                            color={Colors.white}
+                        />
+                        <Text style={styles.chatOptionText}>Share</Text>
+                    </Pressable>
+                    <Pressable
+                        style={styles.chatOption}
+                        onPress={() => handleDeleteChat()}
+                    >
+                        <RemixIcon
+                            name="delete-bin-line"
+                            size={FontSizes.md}
+                            color={Colors.white}
+                        />
+                        <Text style={styles.chatOptionText}>Delete</Text>
+                    </Pressable>
+                </View>
+            ) : null}
 
             <View style={styles.container}>
                 {/* Chat */}
@@ -528,6 +595,28 @@ const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
         backgroundColor: Colors.primary,
+    },
+
+    chatOptions: {
+        flexDirection: "row",
+        gap: 12,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+    },
+    chatOption: {
+        backgroundColor: Colors.secondary,
+        flex: 1,
+        padding: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        borderRadius: 999,
+    },
+    chatOptionText: {
+        color: Colors.white,
+        fontSize: FontSizes.md,
+        fontFamily: "DMSans-Medium",
     },
 
     container: {

@@ -79,7 +79,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 // ─────────────────────────────
 
                 strong: {
-                    fontFamily: "DMSans-SemiBold",
+                    fontFamily: "Sora-Medium",
                 },
 
                 em: {
