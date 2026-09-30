@@ -149,6 +149,7 @@ export default function Index() {
 
         if (!model) {
             console.log("No active model");
+            ToastAndroid.show("No active model", ToastAndroid.SHORT);
             return;
         }
 
@@ -319,6 +320,7 @@ export default function Index() {
 
         if (!model) {
             console.log("No active model");
+            ToastAndroid.show("No active model", ToastAndroid.SHORT);
             return;
         }
 
@@ -423,6 +425,13 @@ export default function Index() {
             return;
         }
 
+        const model = getActiveLanguageModel();
+        if (!model) {
+            console.log("No active model");
+            ToastAndroid.show("No active model", ToastAndroid.SHORT);
+            return;
+        }
+
         const targetIndex = messages.findIndex((m) => m.id === messageId);
         if (targetIndex === -1) {
             return;
@@ -507,13 +516,11 @@ export default function Index() {
     const renderNoModelState = () => {
         return (
             <View style={styles.emptyStateContainer}>
-                <View style={styles.emptyStateIcon}>
-                    <RemixIcon
-                        name="cpu-line"
-                        size={FontSizes.xxl}
-                        color={Colors.text}
-                    />
-                </View>
+                <RemixIcon
+                    name="apps-2-ai-line"
+                    size={80}
+                    color={Colors.text}
+                />
 
                 <Text style={styles.emptyStateTitle}>
                     Choose a model to start
@@ -523,10 +530,6 @@ export default function Index() {
                     Browse the available models and choose one to start
                     chatting.
                 </Text>
-
-                <Pressable style={styles.modelsButton} onPress={openModels}>
-                    <Text style={styles.modelsButtonText}>Browse Models</Text>
-                </Pressable>
             </View>
         );
     };
@@ -534,13 +537,11 @@ export default function Index() {
     const renderEmptyChatState = () => {
         return (
             <View style={styles.emptyStateContainer}>
-                <View style={styles.emptyStateIcon}>
-                    <RemixIcon
-                        name="sparkling-2-line"
-                        size={FontSizes.xxl}
-                        color={Colors.text}
-                    />
-                </View>
+                <RemixIcon
+                    name="quill-pen-ai-fill"
+                    size={80}
+                    color={Colors.text}
+                />
 
                 <Text style={styles.emptyStateTitle}>Start a conversation</Text>
 
@@ -791,12 +792,13 @@ export default function Index() {
                             placeholder={
                                 activeModel
                                     ? "Ask anything"
-                                    : "Load a model to start chatting"
+                                    : activeChatId
+                                      ? "Load a model to continue"
+                                      : "Load a model to start"
                             }
                             placeholderTextColor={Colors.textMuted}
                             value={value}
                             onChangeText={setValue}
-                            // textAlignVertical="top"
                             returnKeyType="default"
                             editable={!!activeModel && !generating}
                             style={[
@@ -818,22 +820,38 @@ export default function Index() {
                         <Pressable
                             style={[
                                 styles.sendButton,
+                                !activeModel && styles.loadButton,
                                 !generating &&
-                                    (!value.trim() || !activeModel) &&
+                                    activeModel &&
+                                    !value.trim() &&
                                     styles.sendButtonDisabled,
                             ]}
-                            onPress={generating ? stopGeneration : sendMessage}
+                            onPress={
+                                generating
+                                    ? stopGeneration
+                                    : activeModel
+                                      ? sendMessage
+                                      : openModels
+                            }
                             disabled={
-                                !generating && (!value.trim() || !activeModel)
+                                !generating && !!activeModel && !value.trim()
                             }
                         >
-                            <RemixIcon
-                                name={
-                                    generating ? "stop-fill" : "arrow-up-line"
-                                }
-                                size={FontSizes.xl}
-                                color={Colors.text}
-                            />
+                            {generating ? (
+                                <RemixIcon
+                                    name="stop-fill"
+                                    size={FontSizes.xl}
+                                    color={Colors.text}
+                                />
+                            ) : activeModel ? (
+                                <RemixIcon
+                                    name="arrow-up-line"
+                                    size={FontSizes.xl}
+                                    color={Colors.text}
+                                />
+                            ) : (
+                                <Text style={styles.loadButtonText}>Load</Text>
+                            )}
                         </Pressable>
                     </View>
                 </View>
@@ -900,22 +918,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
     },
 
-    emptyStateIcon: {
-        width: 58,
-        height: 58,
-        borderRadius: 18,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: Colors.surfaceSecondary,
-        marginBottom: 18,
-    },
-
     emptyStateTitle: {
         fontSize: FontSizes.xl,
-        fontFamily: "DMSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
         color: Colors.text,
         textAlign: "center",
-        marginBottom: 8,
+        marginTop: 16,
     },
 
     emptyStateDescription: {
@@ -925,24 +933,7 @@ const styles = StyleSheet.create({
         lineHeight: 22,
         color: Colors.textMuted,
         textAlign: "center",
-        marginBottom: 22,
-    },
-
-    modelsButton: {
-        height: 46,
-        paddingHorizontal: 18,
-        borderRadius: 23,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        backgroundColor: Colors.buttonSecondary,
-    },
-
-    modelsButtonText: {
-        fontSize: FontSizes.md,
-        fontFamily: "DMSans-SemiBold",
-        color: Colors.buttonSecondaryText,
+        marginTop: 8,
     },
 
     /*
@@ -1070,5 +1061,15 @@ const styles = StyleSheet.create({
 
     sendButtonDisabled: {
         opacity: 0.35,
+    },
+
+    loadButton: {
+        width: 64,
+    },
+
+    loadButtonText: {
+        fontSize: FontSizes.sm,
+        fontFamily: "DMSans-SemiBold",
+        color: Colors.text,
     },
 });
