@@ -72,6 +72,7 @@ export default function Index() {
     const abortControllerRef = useRef<AbortController | null>(null);
     const scrollViewRef = useRef<ScrollView>(null);
     const loadedChatIdRef = useRef<string | null>(null);
+    const inputRef = useRef<TextInput>(null);
 
     // Load messages when active chat changes
     useEffect(() => {
@@ -157,82 +158,106 @@ export default function Index() {
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
+        // Ensure any previous native completion has stopped
         try {
-            const result = streamText({
-                model,
+            await model.getContext()?.stopCompletion();
+        } catch {}
 
-                system: "You are Arctyc, a helpful AI assistant.",
-
-                messages: conversation.slice(-20).map((message) => ({
-                    role: message.role,
-                    content: message.content,
-                })),
-
-                abortSignal: controller.signal,
-
-                telemetry: {
-                    isEnabled: false,
-                },
-            });
-
+        try {
             let response = "";
             let hasStartedResponding = false;
+            const maxAttempts = 3;
 
-            try {
-                for await (const delta of result.textStream) {
-                    response += delta;
-
-                    if (!hasStartedResponding) {
-                        hasStartedResponding = true;
-                        setThinking(false);
-                    }
-
-                    setMessages((current) =>
-                        current.map((message) =>
-                            message.id === assistantMessageId
-                                ? {
-                                      ...message,
-                                      content: response,
-                                      status: "generating",
-                                  }
-                                : message,
-                        ),
-                    );
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                if (controller.signal.aborted) {
+                    return;
                 }
 
-                // Stream finished normally.
-                setMessages((current) =>
-                    current.map((message) =>
-                        message.id === assistantMessageId
-                            ? {
-                                  ...message,
-                                  content: response,
-                                  status: "complete",
-                              }
-                            : message,
-                    ),
-                );
+                try {
+                    const result = streamText({
+                        model,
 
-                await updateMessageContent(assistantMessageId, response);
-                loadChats();
+                        system: "You are Arctyc, a helpful AI assistant.",
 
-                console.log("AI response:", response);
-            } catch (error) {
-                // Abort is expected when the user presses Stop.
-                if (controller.signal.aborted) {
-                    console.log("Generation stopped by user.");
+                        messages: conversation.slice(-20).map((message) => ({
+                            role: message.role,
+                            content: message.content,
+                        })),
 
-                    // Keep the partial response.
-                    setMessages((current) =>
-                        current.map((message) =>
-                            message.id === assistantMessageId
-                                ? {
-                                      ...message,
-                                      status: "stopped",
-                                  }
-                                : message,
-                        ),
-                    );
+                        abortSignal: controller.signal,
+
+                        telemetry: {
+                            isEnabled: false,
+                        },
+                    });
+
+                    for await (const delta of result.textStream) {
+                        response += delta;
+
+                        if (!hasStartedResponding) {
+                            hasStartedResponding = true;
+                            setThinking(false);
+                        }
+
+                        setMessages((current) =>
+                            current.map((message) =>
+                                message.id === assistantMessageId
+                                    ? {
+                                          ...message,
+                                          content: response,
+                                          status: "generating",
+                                      }
+                                    : message,
+                            ),
+                        );
+                    }
+
+                    // Stream finished normally.
+                    break;
+                } catch (error) {
+                    // Abort is expected when the user presses Stop.
+                    if (controller.signal.aborted) {
+                        console.log("Generation stopped by user.");
+
+                        // Keep the partial response.
+                        setMessages((current) =>
+                            current.map((message) =>
+                                message.id === assistantMessageId
+                                    ? {
+                                          ...message,
+                                          status: "stopped",
+                                      }
+                                    : message,
+                            ),
+                        );
+
+                        if (response) {
+                            await updateMessageContent(
+                                assistantMessageId,
+                                response,
+                            );
+                        }
+                        loadChats();
+
+                        return;
+                    }
+
+                    // If error occurs before any tokens were received, the native context
+                    // might still be finishing up the previous stopped completion.
+                    if (!hasStartedResponding && attempt < maxAttempts) {
+                        console.log(
+                            `Stream start attempt ${attempt} failed, retrying in 200ms...`,
+                        );
+                        try {
+                            await model.getContext()?.stopCompletion();
+                        } catch {}
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 200),
+                        );
+                        continue;
+                    }
+
+                    console.error("Stream error:", error);
 
                     if (response) {
                         await updateMessageContent(
@@ -242,28 +267,37 @@ export default function Index() {
                     }
                     loadChats();
 
+                    // Unexpected generation error.
+                    setMessages((current) =>
+                        current.map((message) =>
+                            message.id === assistantMessageId
+                                ? {
+                                      ...message,
+                                      status: "error",
+                                  }
+                                : message,
+                        ),
+                    );
                     return;
                 }
-
-                console.error("Stream error:", error);
-
-                if (response) {
-                    await updateMessageContent(assistantMessageId, response);
-                }
-                loadChats();
-
-                // Unexpected generation error.
-                setMessages((current) =>
-                    current.map((message) =>
-                        message.id === assistantMessageId
-                            ? {
-                                  ...message,
-                                  status: "error",
-                              }
-                            : message,
-                    ),
-                );
             }
+
+            setMessages((current) =>
+                current.map((message) =>
+                    message.id === assistantMessageId
+                        ? {
+                              ...message,
+                              content: response,
+                              status: "complete",
+                          }
+                        : message,
+                ),
+            );
+
+            await updateMessageContent(assistantMessageId, response);
+            loadChats();
+
+            console.log("AI response:", response);
         } finally {
             setThinking(false);
             setGenerating(false);
@@ -343,10 +377,11 @@ export default function Index() {
 
     const stopGeneration = () => {
         abortControllerRef.current?.abort();
-    };
-
-    const openModels = () => {
-        router.push("/models");
+        try {
+            getActiveLanguageModel()?.getContext()?.stopCompletion();
+        } catch (e) {
+            console.warn("Failed to stop llama completion:", e);
+        }
     };
 
     const handleShareChat = async () => {
@@ -381,6 +416,39 @@ export default function Index() {
     const handleCopyMessage = async (message: string) => {
         await Clipboard.setStringAsync(message);
         ToastAndroid.show("Copied!", ToastAndroid.SHORT);
+    };
+
+    const handleEditMessage = async (messageId: string) => {
+        if (thinking || generating) {
+            return;
+        }
+
+        const targetIndex = messages.findIndex((m) => m.id === messageId);
+        if (targetIndex === -1) {
+            return;
+        }
+
+        const targetMessage = messages[targetIndex];
+
+        if (targetIndex === 0 && activeChatId) {
+            loadedChatIdRef.current = null;
+            chatOptionsOpen && setChatOptionsOpen(false);
+            await deleteChat(activeChatId);
+            setMessages([]);
+        } else {
+            const messagesToDelete = messages.slice(targetIndex);
+            const remainingMessages = messages.slice(0, targetIndex);
+
+            if (activeChatId) {
+                await deleteMessages(messagesToDelete.map((m) => m.id));
+            }
+
+            setMessages(remainingMessages);
+            loadChats();
+        }
+
+        setValue(targetMessage.content);
+        inputRef.current?.focus();
     };
 
     const handleRegenerateMessage = async (messageId?: string) => {
@@ -430,6 +498,10 @@ export default function Index() {
         setMessages([...conversation, assistantMessage]);
 
         await streamAssistantResponse(conversation, assistantMessageId);
+    };
+
+    const openModels = () => {
+        router.push("/models");
     };
 
     const renderNoModelState = () => {
@@ -565,31 +637,61 @@ export default function Index() {
                                                   />
                                               )}
                                           </View>
-                                          <View style={styles.messageOptions}>
+                                          <View
+                                              style={[
+                                                  styles.messageOptions,
+                                                  {
+                                                      alignSelf: isUser
+                                                          ? "flex-end"
+                                                          : "flex-start",
+                                                  },
+                                              ]}
+                                          >
                                               {isUser ? (
-                                                  <Pressable
-                                                      style={[
-                                                          styles.messageOptionButton,
-                                                          {
-                                                              alignSelf: isUser
-                                                                  ? "flex-end"
-                                                                  : "flex-start",
-                                                          },
-                                                      ]}
-                                                      onPress={() =>
-                                                          handleCopyMessage(
-                                                              message.content,
-                                                          )
-                                                      }
-                                                  >
-                                                      <RemixIcon
-                                                          name="file-copy-line"
-                                                          size={FontSizes.sm}
-                                                          color={
-                                                              Colors.textSecondary
+                                                  <>
+                                                      <Pressable
+                                                          style={
+                                                              styles.messageOptionButton
                                                           }
-                                                      />
-                                                  </Pressable>
+                                                          onPress={() =>
+                                                              handleCopyMessage(
+                                                                  message.content,
+                                                              )
+                                                          }
+                                                      >
+                                                          <RemixIcon
+                                                              name="file-copy-line"
+                                                              size={
+                                                                  FontSizes.sm
+                                                              }
+                                                              color={
+                                                                  Colors.textSecondary
+                                                              }
+                                                          />
+                                                      </Pressable>
+                                                      {!generating && (
+                                                          <Pressable
+                                                              style={
+                                                                  styles.messageOptionButton
+                                                              }
+                                                              onPress={() =>
+                                                                  handleEditMessage(
+                                                                      message.id,
+                                                                  )
+                                                              }
+                                                          >
+                                                              <RemixIcon
+                                                                  name="pencil-line"
+                                                                  size={
+                                                                      FontSizes.sm
+                                                                  }
+                                                                  color={
+                                                                      Colors.textSecondary
+                                                                  }
+                                                              />
+                                                          </Pressable>
+                                                      )}
+                                                  </>
                                               ) : (
                                                   (message.status ==
                                                       "complete" ||
@@ -597,15 +699,9 @@ export default function Index() {
                                                           "stopped") && (
                                                       <>
                                                           <Pressable
-                                                              style={[
-                                                                  styles.messageOptionButton,
-                                                                  {
-                                                                      alignSelf:
-                                                                          isUser
-                                                                              ? "flex-end"
-                                                                              : "flex-start",
-                                                                  },
-                                                              ]}
+                                                              style={
+                                                                  styles.messageOptionButton
+                                                              }
                                                               onPress={() =>
                                                                   handleCopyMessage(
                                                                       message.content,
@@ -690,6 +786,7 @@ export default function Index() {
                 >
                     <View style={styles.inputWrapper}>
                         <TextInput
+                            ref={inputRef}
                             multiline
                             placeholder={
                                 activeModel
@@ -880,15 +977,14 @@ const styles = StyleSheet.create({
     messageOptions: {
         flexDirection: "row",
         gap: 8,
+        marginTop: 8,
     },
 
     messageOptionButton: {
-        marginTop: 12,
         backgroundColor: Colors.surfaceSecondary,
         paddingVertical: 8,
         paddingHorizontal: 12,
         borderRadius: 999,
-        gap: 4,
     },
 
     thinkingMessage: {
