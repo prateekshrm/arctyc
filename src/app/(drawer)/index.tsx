@@ -790,11 +790,13 @@ export default function Index() {
                             ref={inputRef}
                             multiline
                             placeholder={
-                                activeModel
-                                    ? "Ask anything"
-                                    : activeChatId
-                                      ? "Load a model to continue"
-                                      : "Load a model to start"
+                                generating
+                                    ? "Generating response..."
+                                    : activeModel
+                                      ? "Ask anything"
+                                      : activeChatId
+                                        ? "Load a model to continue"
+                                        : "Load a model to start"
                             }
                             placeholderTextColor={Colors.textMuted}
                             value={value}
