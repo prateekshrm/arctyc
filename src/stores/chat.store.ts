@@ -1,6 +1,7 @@
 import {
     DBChat,
     createChat as dbCreateChat,
+    deleteAllChats as dbDeleteAllChats,
     deleteChat as dbDeleteChat,
     getChats as dbGetChats,
 } from "@/services/chat-db";
@@ -16,6 +17,7 @@ type ChatStore = {
     newChat: () => void;
     createChat: (id: string, title: string) => Promise<DBChat>;
     deleteChat: (id: string) => Promise<void>;
+    deleteAllChats: () => Promise<void>;
 };
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -61,6 +63,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             }));
         } catch (error) {
             console.error("Failed to delete chat:", error);
+        }
+    },
+    deleteAllChats: async () => {
+        try {
+            dbDeleteAllChats();
+            set(() => ({
+                chats: [],
+                activeChatId: null,
+            }));
+        } catch (error) {
+            console.error("Failed to delete all chats", error);
         }
     },
 }));

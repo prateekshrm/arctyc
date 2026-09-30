@@ -130,3 +130,9 @@ export const deleteMessages = async (ids: string[]): Promise<void> => {
     );
 };
 
+export const deleteAllChats = async (): Promise<void> => {
+    const db = getDatabase();
+    await db
+        .runAsync("DELETE FROM chats")
+        .then(() => console.log("All chats deleted"));
+};

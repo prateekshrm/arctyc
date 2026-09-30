@@ -1,8 +1,17 @@
+import { useChatStore } from "@/stores/chat.store";
+import { useDialogStore } from "@/stores/dialog.store";
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    ToastAndroid,
+    View,
+} from "react-native";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -22,6 +31,35 @@ const Settings = () => {
     const insets = useSafeAreaInsets();
 
     const setOnboarded = usePreferencesStore((state) => state.setOnboarded);
+    const showDialog = useDialogStore((state) => state.showDialog);
+    const chats = useChatStore((state) => state.chats);
+    const deleteAllChats = useChatStore((state) => state.deleteAllChats);
+
+    const handleDeleteAllChats = () => {
+        if (chats.length !== 0) {
+            showDialog({
+                title: "Delete All Chats?",
+                message:
+                    "This will permanently delete all of your chats and cannot be undone. Are you sure you want to continue?",
+                confirmButton: {
+                    label: "Delete All",
+                    variant: "destructive",
+                    onPress: () => {
+                        deleteAllChats();
+                        ToastAndroid.show(
+                            "Deleted all chats!",
+                            ToastAndroid.SHORT,
+                        );
+                    },
+                },
+                dismissButton: {
+                    label: "Cancel",
+                },
+            });
+        } else {
+            ToastAndroid.show("No chats to delete!", ToastAndroid.SHORT);
+        }
+    };
 
     const settingsSections: SettingsSection[] = [
         {
@@ -38,6 +76,17 @@ const Settings = () => {
                     description: "Learn more about Arctyc",
                     icon: "information-line",
                     onPress: () => router.push("/about"),
+                },
+            ],
+        },
+        {
+            title: "Data",
+            items: [
+                {
+                    title: "Delete all chats",
+                    description: "Permanently delete all the chats",
+                    icon: "delete-bin-line",
+                    onPress: () => handleDeleteAllChats(),
                 },
             ],
         },
