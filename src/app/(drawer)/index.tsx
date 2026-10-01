@@ -129,6 +129,11 @@ export default function Index() {
 
         const showSubscription = Keyboard.addListener(showEvent, () => {
             setIsKeyboardVisible(true);
+            requestAnimationFrame(() => {
+                scrollViewRef.current?.scrollToEnd({
+                    animated: true,
+                });
+            });
         });
 
         const hideSubscription = Keyboard.addListener(hideEvent, () => {
