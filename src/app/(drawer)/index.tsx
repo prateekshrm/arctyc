@@ -119,7 +119,7 @@ export default function Index() {
                 animated: true,
             });
         });
-    }, [messages, thinking]);
+    }, [generating, thinking]);
 
     useEffect(() => {
         const showEvent =
