@@ -63,6 +63,17 @@ const Settings = () => {
 
     const settingsSections: SettingsSection[] = [
         {
+            title: "Data",
+            items: [
+                {
+                    title: "Delete all chats",
+                    description: "Permanently delete all the chats",
+                    icon: "delete-bin-line",
+                    onPress: () => handleDeleteAllChats(),
+                },
+            ],
+        },
+        {
             title: "General",
             items: [
                 {
@@ -76,17 +87,6 @@ const Settings = () => {
                     description: "Learn more about Arctyc",
                     icon: "information-line",
                     onPress: () => router.push("/about"),
-                },
-            ],
-        },
-        {
-            title: "Data",
-            items: [
-                {
-                    title: "Delete all chats",
-                    description: "Permanently delete all the chats",
-                    icon: "delete-bin-line",
-                    onPress: () => handleDeleteAllChats(),
                 },
             ],
         },

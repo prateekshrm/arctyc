@@ -13,6 +13,7 @@ import { useModelStore } from "@/stores/models.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
 import * as Clipboard from "expo-clipboard";
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
@@ -120,6 +121,20 @@ export default function Index() {
             });
         });
     }, [generating, thinking]);
+
+    useEffect(() => {
+        if (__DEV__ || generating) {
+            activateKeepAwakeAsync().catch((error) => {
+                console.warn("Failed to activate keep awake:", error);
+            });
+        } else {
+            deactivateKeepAwake();
+        }
+
+        return () => {
+            deactivateKeepAwake();
+        };
+    }, [generating]);
 
     useEffect(() => {
         const showEvent =
