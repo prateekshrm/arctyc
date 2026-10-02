@@ -14,6 +14,7 @@ import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
 import * as Clipboard from "expo-clipboard";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
@@ -43,6 +44,8 @@ type Message = {
 export default function Index() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
+
+    const [inputAreaHeight, setInputAreaHeight] = useState(0);
 
     const showDialog = useDialogStore((state) => state.showDialog);
 
@@ -83,6 +86,10 @@ export default function Index() {
         setValue("");
         chatOptionsOpen && setChatOptionsOpen(false);
         loadedChatIdRef.current = activeChatId;
+
+        scrollViewRef.current?.scrollToEnd({
+            animated: true,
+        });
 
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
@@ -535,7 +542,14 @@ export default function Index() {
 
     const renderNoModelState = () => {
         return (
-            <View style={styles.emptyStateContainer}>
+            <View
+                style={[
+                    styles.emptyStateContainer,
+                    {
+                        paddingBottom: inputAreaHeight,
+                    },
+                ]}
+            >
                 <RemixIcon
                     name="apps-2-ai-line"
                     size={80}
@@ -613,7 +627,12 @@ export default function Index() {
                     <ScrollView
                         ref={scrollViewRef}
                         style={styles.chatContainer}
-                        contentContainerStyle={styles.chatContentContainer}
+                        contentContainerStyle={[
+                            styles.chatContentContainer,
+                            {
+                                paddingBottom: inputAreaHeight,
+                            },
+                        ]}
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
                     >
@@ -793,89 +812,98 @@ export default function Index() {
                 ) : (
                     renderNoModelState()
                 )}
+            </View>
+            {/* Input */}
+            <View
+                onLayout={(e) => {
+                    const height = Math.round(e.nativeEvent.layout.height);
+                    if (height > 0) {
+                        setInputAreaHeight(height);
+                    }
+                }}
+                style={[
+                    styles.inputArea,
+                    {
+                        paddingBottom: isKeyboardVisible
+                            ? 16
+                            : insets.bottom + 16,
+                    },
+                ]}
+            >
+                <LinearGradient
+                    style={[{ ...StyleSheet.absoluteFill }]}
+                    colors={["transparent", Colors.surface]}
+                    locations={[0, 0.3]}
+                    pointerEvents="none"
+                />
+                <View style={styles.inputWrapper}>
+                    <TextInput
+                        ref={inputRef}
+                        multiline
+                        placeholder={
+                            generating
+                                ? "Generating response..."
+                                : activeModel
+                                  ? "Ask anything"
+                                  : activeChatId
+                                    ? "Load a model to continue"
+                                    : "Load a model to start"
+                        }
+                        placeholderTextColor={Colors.textMuted}
+                        value={value}
+                        onChangeText={setValue}
+                        returnKeyType="default"
+                        editable={!!activeModel && !generating}
+                        style={[
+                            styles.input,
+                            {
+                                height: Math.max(56, inputHeight),
+                            },
+                        ]}
+                        onContentSizeChange={(event) => {
+                            const contentHeight =
+                                event.nativeEvent.contentSize.height;
 
-                {/* Input */}
-                <View
-                    style={[
-                        styles.inputArea,
-                        {
-                            paddingBottom: isKeyboardVisible
-                                ? 16
-                                : insets.bottom + 16,
-                        },
-                    ]}
-                >
-                    <View style={styles.inputWrapper}>
-                        <TextInput
-                            ref={inputRef}
-                            multiline
-                            placeholder={
-                                generating
-                                    ? "Generating response..."
-                                    : activeModel
-                                      ? "Ask anything"
-                                      : activeChatId
-                                        ? "Load a model to continue"
-                                        : "Load a model to start"
-                            }
-                            placeholderTextColor={Colors.textMuted}
-                            value={value}
-                            onChangeText={setValue}
-                            returnKeyType="default"
-                            editable={!!activeModel && !generating}
-                            style={[
-                                styles.input,
-                                {
-                                    height: Math.max(56, inputHeight),
-                                },
-                            ]}
-                            onContentSizeChange={(event) => {
-                                const contentHeight =
-                                    event.nativeEvent.contentSize.height;
+                            setInputHeight(
+                                Math.min(152, Math.max(56, contentHeight)),
+                            );
+                        }}
+                    />
 
-                                setInputHeight(
-                                    Math.min(152, Math.max(56, contentHeight)),
-                                );
-                            }}
-                        />
-
-                        <Pressable
-                            style={[
-                                styles.sendButton,
-                                !activeModel && styles.loadButton,
-                                !generating &&
-                                    activeModel &&
-                                    !value.trim() &&
-                                    styles.sendButtonDisabled,
-                            ]}
-                            onPress={
-                                generating
-                                    ? stopGeneration
-                                    : activeModel
-                                      ? sendMessage
-                                      : openModels
-                            }
-                            disabled={
-                                !generating && !!activeModel && !value.trim()
-                            }
-                        >
-                            {generating ? (
-                                <RemixIcon
-                                    name="stop-fill"
-                                    size={FontSizes.xl}
-                                    color={Colors.text}
-                                />
-                            ) : activeModel ? (
-                                <RemixIcon
-                                    name="arrow-up-line"
-                                    size={FontSizes.xl}
-                                    color={Colors.text}
-                                />
-                            ) : (
-                                <Text style={styles.loadButtonText}>Load</Text>
-                            )}
-                        </Pressable>
-                    </View>
+                    <Pressable
+                        style={[
+                            styles.sendButton,
+                            !activeModel && styles.loadButton,
+                            !generating &&
+                                activeModel &&
+                                !value.trim() &&
+                                styles.sendButtonDisabled,
+                        ]}
+                        onPress={
+                            generating
+                                ? stopGeneration
+                                : activeModel
+                                  ? sendMessage
+                                  : openModels
+                        }
+                        disabled={!generating && !!activeModel && !value.trim()}
+                    >
+                        {generating ? (
+                            <RemixIcon
+                                name="stop-fill"
+                                size={FontSizes.xl}
+                                color={Colors.text}
+                            />
+                        ) : activeModel ? (
+                            <RemixIcon
+                                name="arrow-up-line"
+                                size={FontSizes.xl}
+                                color={Colors.text}
+                            />
+                        ) : (
+                            <Text style={styles.loadButtonText}>Load</Text>
+                        )}
+                    </Pressable>
                 </View>
             </View>
         </KeyboardAvoidingView>
@@ -1042,10 +1070,14 @@ const styles = StyleSheet.create({
      */
 
     inputArea: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
         width: "100%",
         flexShrink: 0,
-        backgroundColor: Colors.surface,
-        paddingTop: 16,
+        paddingTop: 32,
+        paddingHorizontal: 16,
     },
 
     inputWrapper: {
