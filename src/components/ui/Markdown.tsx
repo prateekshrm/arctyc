@@ -9,6 +9,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
     return (
         <EnrichedMarkdownText
             flavor="github"
+            streamingAnimation={true}
             markdown={markdown}
             markdownStyle={{
                 // ─────────────────────────────
