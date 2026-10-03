@@ -37,6 +37,7 @@ export default function Models() {
         getDeviceCapabilities(),
     );
     const models = useModelStore((state) => state.models);
+    const activeModelId = useModelStore((state) => state.activeModelId);
     const [activeTab, setActiveTab] = useState<TabFilter>("all");
 
     const showDialog = useDialogStore((state) => state.showDialog);
@@ -76,27 +77,26 @@ export default function Models() {
         [models],
     );
 
+    const activeModel = useMemo(
+        () =>
+            models.find((m) => m.id === activeModelId && m.status === "loaded"),
+        [models, activeModelId],
+    );
+
     return (
         <View style={styles.mainContainer}>
             <StatusBar style="light" />
             <View style={styles.container}>
                 <ScrollView
                     contentContainerStyle={{
-                        paddingBottom: insets.bottom + 16,
-                        paddingTop: 8,
+                        paddingBottom: insets.bottom + 24,
+                        gap: 16,
                     }}
                     style={styles.modelContainer}
                     showsVerticalScrollIndicator={false}
                 >
-                    <View style={styles.topHeader}>
-                        <Text style={styles.screenDescription}>
-                            Download and run open-source language models
-                            directly on your device. 100% private, with zero
-                            internet required.
-                        </Text>
-                    </View>
-
-                    <View style={styles.systemInfoRow}>
+                    {/* Device System Info Card */}
+                    <View style={styles.systemInfoCard}>
                         <View style={styles.systemInfoItem}>
                             <View style={styles.systemIconWrapper}>
                                 <RemixIcon
@@ -105,7 +105,7 @@ export default function Models() {
                                     color={Colors.text}
                                 />
                             </View>
-                            <View>
+                            <View style={styles.systemInfoTextCol}>
                                 <Text style={styles.systemInfoLabel}>
                                     Storage
                                 </Text>
@@ -125,14 +125,8 @@ export default function Models() {
                                     color={Colors.text}
                                 />
                             </View>
-                            <View>
-                                <View
-                                    style={{
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                        gap: 4,
-                                    }}
-                                >
+                            <View style={styles.systemInfoTextCol}>
+                                <View style={styles.ramLabelRow}>
                                     <Text style={styles.systemInfoLabel}>
                                         RAM
                                     </Text>
@@ -141,13 +135,13 @@ export default function Models() {
                                             showDialog({
                                                 title: "About usable RAM",
                                                 message:
-                                                    "The RAM shown here is the usable RAM reported by your device. It may be lower than the RAM advertised by the manufacturer because some memory is reserved for the system and hardware.",
+                                                    "The RAM shown here is usable memory reported by your device. It may be slightly lower than advertised because some is reserved for the system.",
                                                 confirmButton: {
                                                     label: "OK",
                                                 },
                                             })
                                         }
-                                        hitSlop={20}
+                                        hitSlop={12}
                                         accessibilityRole="button"
                                         accessibilityLabel="Learn about usable RAM"
                                     >
@@ -160,13 +154,70 @@ export default function Models() {
                                 </View>
                                 <Text style={styles.systemInfoValue}>
                                     {device.totalRamGB !== null
-                                        ? `${device.totalRamGB.toFixed(1)} GB Usable`
+                                        ? `${device.totalRamGB.toFixed(1)} GB`
                                         : "Available"}
                                 </Text>
                             </View>
                         </View>
                     </View>
 
+                    {/* Active Model Indicator Banner */}
+                    {activeModel && (
+                        <View style={styles.activeModelCard}>
+                            <View style={styles.activeModelLeft}>
+                                <View style={styles.activeIconWrapper}>
+                                    <RemixIcon
+                                        name="brain-line"
+                                        size={FontSizes.md}
+                                        color={Colors.text}
+                                    />
+                                </View>
+                                <View style={styles.activeModelTextCol}>
+                                    <View style={styles.activeLabelRow}>
+                                        {/* <View
+                                            style={styles.activeIndicatorDot}
+                                        /> */}
+                                        <Text style={styles.activeBadgeLabel}>
+                                            Active Model
+                                        </Text>
+                                    </View>
+                                    <Text
+                                        style={styles.activeModelName}
+                                        numberOfLines={1}
+                                    >
+                                        {activeModel.name}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.activeChatButton,
+                                    pressed && styles.buttonPressed,
+                                ]}
+                                onPress={() => router.replace("/")}
+                            >
+                                <RemixIcon
+                                    name="message-3-line"
+                                    size={FontSizes.xs}
+                                    color={Colors.buttonPrimaryText}
+                                />
+                                <Text style={styles.activeChatButtonText}>
+                                    Chat
+                                </Text>
+                            </Pressable>
+                        </View>
+                    )}
+
+                    {/* Top Header */}
+                    <View style={styles.topHeader}>
+                        <Text style={styles.screenDescription}>
+                            Download and run open-source models offline on your
+                            device. Private, fast, and no internet required.
+                        </Text>
+                    </View>
+
+                    {/* Filter Tabs */}
                     {installedModels.length > 0 && (
                         <View style={styles.filterChipsRow}>
                             <Pressable
@@ -214,13 +265,12 @@ export default function Models() {
                             {recommendedModels.length > 0 && (
                                 <View style={styles.section}>
                                     <View style={styles.sectionHeader}>
-                                        <Text style={styles.sectionTitleBig}>
-                                            Recommended for your device
+                                        <Text style={styles.sectionTitle}>
+                                            Recommended
                                         </Text>
                                         <Text style={styles.sectionDescription}>
-                                            Models optimized to run smoothly
-                                            based on your available memory and
-                                            storage.
+                                            Optimized for your device memory and
+                                            storage
                                         </Text>
                                     </View>
 
@@ -238,15 +288,14 @@ export default function Models() {
 
                             <View style={styles.section}>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitleBig}>
+                                    <Text style={styles.sectionTitle}>
                                         {recommendedModels.length > 0
                                             ? "Other Models"
                                             : "All Models"}
                                     </Text>
                                     <Text style={styles.sectionDescription}>
-                                        Browse all available models with
-                                        different capabilities, sizes, and
-                                        speeds.
+                                        Available open-source models with
+                                        various sizes
                                     </Text>
                                 </View>
 
@@ -264,12 +313,11 @@ export default function Models() {
                     ) : (
                         <View style={styles.section}>
                             <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitleBig}>
+                                <Text style={styles.sectionTitle}>
                                     Installed Models
                                 </Text>
                                 <Text style={styles.sectionDescription}>
-                                    Models downloaded to your device and ready
-                                    to load for offline chat.
+                                    Downloaded to your device and ready to load
                                 </Text>
                             </View>
 
@@ -298,7 +346,6 @@ const ModelCard = memo(
 
         const activeModelId = useModelStore((state) => state.activeModelId);
         const isModelLoading = useModelStore((state) => state.isModelLoading);
-
         const showDialog = useDialogStore((state) => state.showDialog);
 
         const status = modelState?.status ?? "available";
@@ -320,9 +367,9 @@ const ModelCard = memo(
                         label: "OK",
                     },
                 });
-
                 return;
             }
+
             if (
                 device.totalRamGB !== null &&
                 model.requirements.minimumRamGB > device.totalRamGB
@@ -333,7 +380,7 @@ const ModelCard = memo(
                         model.requirements.minimumRamGB
                     } GB of RAM, while your device has ${
                         device.totalRamGB
-                    } GB of usable RAM. It may fail to load or make the app unstable while running.`,
+                    } GB of usable RAM. It may fail to load or run slowly.`,
                     confirmButton: {
                         label: "Download Anyway",
                         variant: "destructive",
@@ -345,7 +392,6 @@ const ModelCard = memo(
                         label: "Cancel",
                     },
                 });
-
                 return;
             }
 
@@ -359,9 +405,9 @@ const ModelCard = memo(
         const handleDelete = () => {
             showDialog({
                 title: "Delete model?",
-                message: `Are you sure you want to delete ${model.name}? This will remove the model from your device. You can download it again later if needed.`,
+                message: `Are you sure you want to delete ${model.name}? You can download it again anytime.`,
                 confirmButton: {
-                    label: "Delete Model",
+                    label: "Delete",
                     variant: "destructive",
                     onPress: () => {
                         deleteModel(model.id).catch(() => {});
@@ -375,7 +421,6 @@ const ModelCard = memo(
 
         const handleLoad = async () => {
             setIsLocalLoading(true);
-
             try {
                 await loadModel(model.id);
             } catch {
@@ -390,121 +435,101 @@ const ModelCard = memo(
         };
 
         const isDownloading = status === "downloading";
-
         const isCurrentActive =
             activeModelId === model.id && status === "loaded";
-
         const isCurrentLoading = status === "loading" || isLocalLoading;
-
         const isDownloaded =
             status === "downloaded" || isCurrentActive || isCurrentLoading;
-
         const isError = status === "error";
 
         return (
-            <View style={styles.card}>
+            <View style={[styles.card, isCurrentActive && styles.cardActive]}>
+                {/* Header: Title, Provider, and Status badge */}
                 <View style={styles.cardHeader}>
                     <View style={styles.cardTitleCol}>
-                        <View style={styles.nameRow}>
-                            <Text style={styles.modelName}>{model.name}</Text>
-
-                            {isDownloaded && (
-                                <View
-                                    style={[
-                                        styles.downloadedChip,
-                                        isCurrentActive && styles.activeChip,
-                                    ]}
-                                >
-                                    <RemixIcon
-                                        name={
-                                            isCurrentActive
-                                                ? "cpu-fill"
-                                                : "checkbox-circle-fill"
-                                        }
-                                        size={FontSizes.xs}
-                                        color={
-                                            isCurrentActive
-                                                ? Colors.textInverse
-                                                : Colors.text
-                                        }
-                                    />
-
-                                    <Text
-                                        style={[
-                                            styles.downloadedChipText,
-                                            isCurrentActive &&
-                                                styles.activeChipText,
-                                        ]}
-                                    >
-                                        {isCurrentActive
-                                            ? "Active"
-                                            : "Downloaded"}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-
+                        <Text style={styles.modelName}>{model.name}</Text>
                         <Text style={styles.providerText}>
                             {model.provider}
                         </Text>
                     </View>
+
+                    {isDownloaded && (
+                        <View
+                            style={[
+                                styles.statusBadge,
+                                isCurrentActive && styles.statusBadgeActive,
+                            ]}
+                        >
+                            <RemixIcon
+                                name={
+                                    isCurrentActive
+                                        ? "cpu-fill"
+                                        : "checkbox-circle-fill"
+                                }
+                                size={FontSizes.xs}
+                                color={
+                                    isCurrentActive
+                                        ? Colors.textInverse
+                                        : Colors.text
+                                }
+                            />
+                            <Text
+                                style={[
+                                    styles.statusBadgeText,
+                                    isCurrentActive &&
+                                        styles.statusBadgeTextActive,
+                                ]}
+                            >
+                                {isCurrentActive ? "Active" : "Downloaded"}
+                            </Text>
+                        </View>
+                    )}
                 </View>
 
-                <Text style={styles.description}>{model.description}</Text>
-
-                <View style={styles.statsGrid}>
-                    <View style={styles.statsRow}>
-                        <View style={styles.statCell}>
-                            <Text style={styles.statLabel}>Parameters</Text>
-
-                            <Text style={styles.statValue}>
-                                {model.parameterCount}
-                            </Text>
-                        </View>
-
-                        <View style={styles.statCellDivider} />
-
-                        <View style={styles.statCell}>
-                            <Text style={styles.statLabel}>Download Size</Text>
-
-                            <Text style={styles.statValue}>
-                                {formatBytes(model.sizeBytes)}
-                            </Text>
-                        </View>
+                {/* Compact Spec Badges */}
+                <View style={styles.specsRow}>
+                    <View style={styles.specBadge}>
+                        <RemixIcon
+                            name="hard-drive-2-line"
+                            size={12}
+                            color={Colors.textSecondary}
+                        />
+                        <Text style={styles.specBadgeText}>
+                            {formatBytes(model.sizeBytes)}
+                        </Text>
                     </View>
 
-                    <View style={styles.statsRowDivider} />
+                    <View style={styles.specBadge}>
+                        <RemixIcon
+                            name="equalizer-line"
+                            size={12}
+                            color={Colors.textSecondary}
+                        />
+                        <Text style={styles.specBadgeText}>
+                            {model.parameterCount}
+                        </Text>
+                    </View>
 
-                    <View style={styles.statsRow}>
-                        <View style={styles.statCell}>
-                            <Text style={styles.statLabel}>Minimum RAM</Text>
-
-                            <Text style={styles.statValue}>
-                                {model.requirements.minimumRamGB} GB
-                            </Text>
-                        </View>
-                        <View style={styles.statCellDivider} />
-                        <View style={styles.statCell}>
-                            <Text style={styles.statLabel}>
-                                Recommended RAM
-                            </Text>
-
-                            <Text style={styles.statValue}>
-                                {model.requirements.recommendedRamGB} GB
-                            </Text>
-                        </View>
+                    <View style={styles.specBadge}>
+                        <RemixIcon
+                            name="dashboard-3-line"
+                            size={12}
+                            color={Colors.textSecondary}
+                        />
+                        <Text style={styles.specBadgeText}>
+                            {model.requirements.minimumRamGB} GB+ RAM
+                        </Text>
                     </View>
                 </View>
 
-                {/* Error */}
+                {/* Error Banner */}
                 {Boolean(modelState?.error) && (
                     <View style={styles.errorBox}>
                         <RemixIcon
                             name="error-warning-fill"
-                            size={FontSizes.md}
+                            size={FontSizes.sm}
                             color={Colors.error}
                         />
-
                         <Text style={styles.errorText} numberOfLines={2}>
                             {modelState?.error}
                         </Text>
@@ -519,7 +544,6 @@ const ModelCard = memo(
                                 {formatBytes(model.sizeBytes * progress)} /{" "}
                                 {formatBytes(model.sizeBytes)}
                             </Text>
-
                             <Text style={styles.progressPercentage}>
                                 {progressPercent}%
                             </Text>
@@ -541,24 +565,22 @@ const ModelCard = memo(
                     </View>
                 )}
 
-                {/* Actions */}
+                {/* Actions: Pill-shaped rounded buttons */}
                 <View style={styles.actionsContainer}>
                     {isDownloading ? (
                         <Pressable
                             onPress={handleCancel}
-                            hitSlop={8}
                             style={({ pressed }) => [
-                                styles.cancelButton,
+                                styles.cancelPillButton,
                                 pressed && styles.buttonPressed,
                             ]}
                         >
                             <RemixIcon
                                 name="close-line"
-                                size={FontSizes.md}
+                                size={FontSizes.sm}
                                 color={Colors.buttonDangerText}
                             />
-
-                            <Text style={styles.cancelButtonText}>
+                            <Text style={styles.cancelPillButtonText}>
                                 Cancel Download
                             </Text>
                         </Pressable>
@@ -567,21 +589,21 @@ const ModelCard = memo(
                             {isCurrentActive ? (
                                 <>
                                     <Pressable
-                                        onPress={() => {
-                                            router.replace("/");
-                                        }}
+                                        onPress={() => router.replace("/")}
                                         style={({ pressed }) => [
-                                            styles.chatButton,
+                                            styles.pillButtonPrimary,
+                                            styles.flexButton,
                                             pressed && styles.buttonPressed,
                                         ]}
                                     >
                                         <RemixIcon
                                             name="message-3-line"
-                                            size={FontSizes.md}
+                                            size={FontSizes.sm}
                                             color={Colors.buttonPrimaryText}
                                         />
-
-                                        <Text style={styles.chatButtonText}>
+                                        <Text
+                                            style={styles.pillButtonPrimaryText}
+                                        >
                                             Chat
                                         </Text>
                                     </Pressable>
@@ -589,19 +611,18 @@ const ModelCard = memo(
                                     <Pressable
                                         onPress={handleUnload}
                                         style={({ pressed }) => [
-                                            styles.loadButtonSecondary,
+                                            styles.pillButtonSecondary,
                                             pressed && styles.buttonPressed,
                                         ]}
                                     >
                                         <RemixIcon
                                             name="stop-circle-line"
-                                            size={FontSizes.md}
+                                            size={FontSizes.sm}
                                             color={Colors.buttonSecondaryText}
                                         />
-
                                         <Text
                                             style={
-                                                styles.loadButtonSecondaryText
+                                                styles.pillButtonSecondaryText
                                             }
                                         >
                                             Unload
@@ -615,9 +636,10 @@ const ModelCard = memo(
                                         isModelLoading || isCurrentLoading
                                     }
                                     style={({ pressed }) => [
-                                        styles.loadButtonSecondary,
+                                        styles.pillButtonPrimary,
+                                        styles.flexButton,
                                         isCurrentLoading &&
-                                            styles.loadButtonLoading,
+                                            styles.pillButtonLoading,
                                         pressed &&
                                             !isCurrentLoading &&
                                             styles.buttonPressed,
@@ -629,22 +651,19 @@ const ModelCard = memo(
                                     {isCurrentLoading ? (
                                         <ActivityIndicator
                                             size="small"
-                                            color={Colors.buttonSecondaryText}
+                                            color={Colors.buttonPrimaryText}
                                         />
                                     ) : (
                                         <RemixIcon
                                             name="play-circle-line"
-                                            size={FontSizes.md}
-                                            color={Colors.buttonSecondaryText}
+                                            size={FontSizes.sm}
+                                            color={Colors.buttonPrimaryText}
                                         />
                                     )}
-
-                                    <Text
-                                        style={styles.loadButtonSecondaryText}
-                                    >
+                                    <Text style={styles.pillButtonPrimaryText}>
                                         {isCurrentLoading
-                                            ? "Loading into Memory..."
-                                            : "Load into Memory"}
+                                            ? "Loading..."
+                                            : "Load Model"}
                                     </Text>
                                 </Pressable>
                             )}
@@ -653,10 +672,13 @@ const ModelCard = memo(
                                 onPress={handleDelete}
                                 disabled={isCurrentLoading}
                                 style={({ pressed }) => [
-                                    styles.deleteButton,
+                                    styles.deleteIconButton,
                                     pressed && styles.buttonPressed,
                                     isCurrentLoading && styles.buttonDisabled,
                                 ]}
+                                hitSlop={4}
+                                accessibilityRole="button"
+                                accessibilityLabel="Delete model"
                             >
                                 <RemixIcon
                                     name="delete-bin-line"
@@ -669,17 +691,16 @@ const ModelCard = memo(
                         <Pressable
                             onPress={handleDownload}
                             style={({ pressed }) => [
-                                styles.downloadButton,
+                                styles.pillButtonPrimary,
                                 pressed && styles.buttonPressed,
                             ]}
                         >
                             <RemixIcon
-                                name="download-2-line"
-                                size={FontSizes.md}
+                                name="download-line"
+                                size={FontSizes.sm}
                                 color={Colors.buttonPrimaryText}
                             />
-
-                            <Text style={styles.downloadButtonText}>
+                            <Text style={styles.pillButtonPrimaryText}>
                                 {isError
                                     ? "Retry Download"
                                     : `Download (${formatBytes(
@@ -724,9 +745,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    topHeader: {
-        marginBottom: 14,
-    },
+    topHeader: {},
 
     screenDescription: {
         fontFamily: "DMSans-Regular",
@@ -735,11 +754,13 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
 
-    systemInfoRow: {
+    /* Device Info Card */
+    systemInfoCard: {
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 10,
-        marginBottom: 16,
+        backgroundColor: Colors.surfaceSecondary,
+        borderRadius: 16,
+        padding: 12,
     },
 
     systemInfoItem: {
@@ -753,9 +774,19 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 8,
-        backgroundColor: Colors.surfaceSecondary,
+        backgroundColor: Colors.surface,
         alignItems: "center",
         justifyContent: "center",
+    },
+
+    systemInfoTextCol: {
+        flex: 1,
+    },
+
+    ramLabelRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
     },
 
     systemInfoLabel: {
@@ -773,20 +804,20 @@ const styles = StyleSheet.create({
 
     systemInfoDivider: {
         width: 1,
-        height: 26,
+        height: 28,
         backgroundColor: Colors.border,
-        marginHorizontal: 14,
+        marginHorizontal: 12,
     },
 
+    /* Filter Chips */
     filterChipsRow: {
         flexDirection: "row",
         gap: 8,
-        marginBottom: 24,
     },
 
     filterChip: {
         paddingVertical: 7,
-        paddingHorizontal: 14,
+        paddingHorizontal: 16,
         borderRadius: 999,
         backgroundColor: Colors.surfaceSecondary,
         borderWidth: 1,
@@ -809,61 +840,129 @@ const styles = StyleSheet.create({
         color: Colors.textInverse,
     },
 
+    /* Sections */
     section: {
-        marginBottom: 28,
+        gap: 10,
     },
 
     sectionHeader: {
-        marginBottom: 14,
+        gap: 2,
     },
 
-    sectionTitleBig: {
+    sectionTitle: {
         fontFamily: "Sora-SemiBold",
-        fontSize: FontSizes.xl,
+        fontSize: FontSizes.lg,
         color: Colors.text,
-        letterSpacing: -0.4,
+        letterSpacing: -0.3,
     },
 
     sectionDescription: {
         fontFamily: "DMSans-Regular",
-        fontSize: FontSizes.sm,
+        fontSize: FontSizes.xs,
         color: Colors.textSecondary,
-        marginTop: 3,
-        lineHeight: 18,
+        lineHeight: 16,
     },
 
     modelsGrid: {
-        gap: 14,
+        gap: 10,
     },
 
+    /* Active Model Card Banner */
+    activeModelCard: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: Colors.surfaceSecondary,
+        borderRadius: 16,
+        padding: 12,
+    },
+
+    activeModelLeft: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        marginRight: 10,
+    },
+
+    activeIconWrapper: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: Colors.surface,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    activeModelTextCol: {
+        flex: 1,
+    },
+
+    activeLabelRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+    },
+
+    activeIndicatorDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: "#16A34A",
+    },
+
+    activeBadgeLabel: {
+        fontFamily: "DMSans-Medium",
+        fontSize: FontSizes.xs,
+        color: Colors.textSecondary,
+    },
+
+    activeModelName: {
+        fontFamily: "Sora-SemiBold",
+        fontSize: FontSizes.sm,
+        color: Colors.text,
+        marginTop: 1,
+    },
+
+    activeChatButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        backgroundColor: Colors.buttonPrimary,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        borderRadius: 999,
+    },
+
+    activeChatButtonText: {
+        fontFamily: "DMSans-SemiBold",
+        fontSize: FontSizes.xs,
+        color: Colors.buttonPrimaryText,
+    },
+
+    /* Model Card */
     card: {
-        padding: 16,
-        borderRadius: 18,
+        padding: 14,
+        borderRadius: 16,
+        backgroundColor: Colors.surfaceSecondary,
         borderWidth: 1,
         borderColor: Colors.border,
-        backgroundColor: Colors.surfaceSecondary,
-        shadowColor: Colors.black,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-        elevation: 1,
+    },
+
+    cardActive: {
+        borderColor: Colors.text,
     },
 
     cardHeader: {
         flexDirection: "row",
         alignItems: "flex-start",
         justifyContent: "space-between",
+        gap: 8,
     },
 
     cardTitleCol: {
         flex: 1,
-    },
-
-    nameRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        flexWrap: "wrap",
     },
 
     modelName: {
@@ -874,101 +973,75 @@ const styles = StyleSheet.create({
     },
 
     providerText: {
-        fontFamily: "DMSans-Medium",
+        fontFamily: "DMSans-Regular",
         fontSize: FontSizes.xs,
         color: Colors.textSecondary,
         marginTop: 2,
     },
 
-    downloadedChip: {
+    /* Badges */
+    statusBadge: {
         flexDirection: "row",
         alignItems: "center",
         gap: 4,
-        paddingHorizontal: 7,
-        paddingVertical: 2.5,
-        borderRadius: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 999,
         backgroundColor: Colors.surface,
         borderWidth: 1,
         borderColor: Colors.border,
     },
 
-    downloadedChipText: {
+    statusBadgeText: {
         fontFamily: "DMSans-SemiBold",
-        fontSize: FontSizes.xs,
+        fontSize: 11,
         color: Colors.text,
     },
 
-    activeChip: {
+    statusBadgeActive: {
         backgroundColor: Colors.buttonPrimary,
         borderColor: Colors.buttonPrimary,
     },
 
-    activeChipText: {
+    statusBadgeTextActive: {
         color: Colors.textInverse,
     },
 
-    description: {
-        marginTop: 10,
-        fontFamily: "DMSans-Regular",
-        fontSize: FontSizes.sm,
-        lineHeight: 18,
-        color: Colors.textSecondary,
+    /* Specs Row */
+    specsRow: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        alignItems: "center",
+        gap: 6,
+        marginTop: 8,
     },
 
-    statsGrid: {
-        marginTop: 12,
-        borderRadius: 12,
+    specBadge: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 999,
         backgroundColor: Colors.surface,
         borderWidth: 1,
         borderColor: Colors.border,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
     },
 
-    statsRow: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-
-    statCell: {
-        flex: 1,
-        paddingVertical: 4,
-    },
-
-    statCellDivider: {
-        width: 1,
-        height: 24,
-        backgroundColor: Colors.border,
-        marginHorizontal: 12,
-    },
-
-    statsRowDivider: {
-        height: 1,
-        backgroundColor: Colors.border,
-        marginVertical: 4,
-    },
-
-    statLabel: {
+    specBadgeText: {
         fontFamily: "DMSans-Medium",
-        fontSize: FontSizes.xs,
-        color: Colors.textMuted,
-        textTransform: "uppercase",
-        letterSpacing: 0.2,
+        fontSize: 11,
+        color: Colors.textSecondary,
     },
 
-    statValue: {
-        fontFamily: "Sora-SemiBold",
-        fontSize: FontSizes.xs,
-        color: Colors.text,
-        marginTop: 2,
-    },
-
+    /* Error Box */
     errorBox: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        marginTop: 12,
-        padding: 9,
+        gap: 6,
+        marginTop: 8,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
         borderRadius: 10,
         backgroundColor: Colors.errorSurface,
         borderWidth: 1,
@@ -983,15 +1056,16 @@ const styles = StyleSheet.create({
         lineHeight: 15,
     },
 
+    /* Progress */
     progressContainer: {
-        marginTop: 12,
+        marginTop: 8,
     },
 
     progressLabelRow: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 6,
+        marginBottom: 4,
     },
 
     progressStats: {
@@ -1007,9 +1081,11 @@ const styles = StyleSheet.create({
     },
 
     progressBarTrack: {
-        height: 6,
+        height: 5,
         borderRadius: 999,
         backgroundColor: Colors.surface,
+        borderWidth: 1,
+        borderColor: Colors.border,
         overflow: "hidden",
     },
 
@@ -1019,44 +1095,9 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.primary,
     },
 
+    /* Action Buttons */
     actionsContainer: {
-        marginTop: 14,
-    },
-
-    downloadButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        backgroundColor: Colors.buttonPrimary,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 12,
-    },
-
-    downloadButtonText: {
-        fontFamily: "DMSans-SemiBold",
-        color: Colors.buttonPrimaryText,
-        fontSize: FontSizes.sm,
-    },
-
-    cancelButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        backgroundColor: Colors.surface,
-        borderWidth: 1,
-        borderColor: Colors.buttonDangerBorder,
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 12,
-    },
-
-    cancelButtonText: {
-        fontFamily: "DMSans-SemiBold",
-        color: Colors.buttonDangerText,
-        fontSize: FontSizes.xs,
+        marginTop: 10,
     },
 
     downloadedActionsRow: {
@@ -1065,59 +1106,78 @@ const styles = StyleSheet.create({
         gap: 8,
     },
 
-    loadButtonSecondary: {
+    flexButton: {
         flex: 1,
+    },
+
+    pillButtonPrimary: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        gap: 8,
-        backgroundColor: Colors.buttonSecondary,
-        borderWidth: 1,
-        borderColor: Colors.border,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 12,
-    },
-
-    loadButtonLoading: {
-        backgroundColor: Colors.border,
-    },
-
-    loadButtonSecondaryText: {
-        fontFamily: "DMSans-SemiBold",
-        color: Colors.buttonSecondaryText,
-        fontSize: FontSizes.sm,
-    },
-
-    chatButton: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
+        gap: 6,
         backgroundColor: Colors.buttonPrimary,
-        borderWidth: 1,
-        borderColor: Colors.buttonPrimary,
-        paddingVertical: 12,
+        height: 38,
         paddingHorizontal: 16,
-        borderRadius: 12,
+        borderRadius: 999,
     },
 
-    chatButtonText: {
+    pillButtonPrimaryText: {
         fontFamily: "DMSans-SemiBold",
         color: Colors.buttonPrimaryText,
-        fontSize: FontSizes.sm,
+        fontSize: FontSizes.xs,
     },
 
-    deleteButton: {
-        paddingVertical: 12,
+    pillButtonSecondary: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        backgroundColor: Colors.surface,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        height: 38,
         paddingHorizontal: 14,
-        borderRadius: 12,
+        borderRadius: 999,
+    },
+
+    pillButtonSecondaryText: {
+        fontFamily: "DMSans-SemiBold",
+        color: Colors.text,
+        fontSize: FontSizes.xs,
+    },
+
+    pillButtonLoading: {
+        opacity: 0.8,
+    },
+
+    deleteIconButton: {
+        width: 38,
+        height: 38,
+        borderRadius: 999,
         backgroundColor: Colors.buttonDanger,
         borderWidth: 1,
         borderColor: Colors.buttonDangerBorder,
         alignItems: "center",
         justifyContent: "center",
+    },
+
+    cancelPillButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        backgroundColor: Colors.surface,
+        borderWidth: 1,
+        borderColor: Colors.buttonDangerBorder,
+        height: 38,
+        paddingHorizontal: 16,
+        borderRadius: 999,
+    },
+
+    cancelPillButtonText: {
+        fontFamily: "DMSans-SemiBold",
+        color: Colors.buttonDangerText,
+        fontSize: FontSizes.xs,
     },
 
     buttonDisabled: {
@@ -1126,6 +1186,6 @@ const styles = StyleSheet.create({
 
     buttonPressed: {
         opacity: 0.8,
-        transform: [{ scale: 0.99 }],
+        transform: [{ scale: 0.98 }],
     },
 });
