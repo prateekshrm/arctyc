@@ -26,6 +26,7 @@ import {
     getDeviceCapabilities,
 } from "@/utils/device-capabilities";
 import { getModelRecommendations } from "@/utils/model-recommendation";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
@@ -39,6 +40,8 @@ export default function Models() {
     const models = useModelStore((state) => state.models);
     const activeModelId = useModelStore((state) => state.activeModelId);
     const [activeTab, setActiveTab] = useState<TabFilter>("all");
+
+    const [activeContainerHeight, setActiveContainerHeight] = useState(0);
 
     const showDialog = useDialogStore((state) => state.showDialog);
 
@@ -89,7 +92,10 @@ export default function Models() {
             <View style={styles.container}>
                 <ScrollView
                     contentContainerStyle={{
-                        paddingBottom: insets.bottom + 24,
+                        paddingBottom:
+                            activeModel && activeContainerHeight
+                                ? insets.bottom + activeContainerHeight
+                                : insets.bottom + 16,
                         gap: 16,
                     }}
                     style={styles.modelContainer}
@@ -160,54 +166,6 @@ export default function Models() {
                             </View>
                         </View>
                     </View>
-
-                    {/* Active Model Indicator Banner */}
-                    {activeModel && (
-                        <View style={styles.activeModelCard}>
-                            <View style={styles.activeModelLeft}>
-                                <View style={styles.activeIconWrapper}>
-                                    <RemixIcon
-                                        name="brain-line"
-                                        size={FontSizes.md}
-                                        color={Colors.text}
-                                    />
-                                </View>
-                                <View style={styles.activeModelTextCol}>
-                                    <View style={styles.activeLabelRow}>
-                                        {/* <View
-                                            style={styles.activeIndicatorDot}
-                                        /> */}
-                                        <Text style={styles.activeBadgeLabel}>
-                                            Active Model
-                                        </Text>
-                                    </View>
-                                    <Text
-                                        style={styles.activeModelName}
-                                        numberOfLines={1}
-                                    >
-                                        {activeModel.name}
-                                    </Text>
-                                </View>
-                            </View>
-
-                            <Pressable
-                                style={({ pressed }) => [
-                                    styles.activeChatButton,
-                                    pressed && styles.buttonPressed,
-                                ]}
-                                onPress={() => router.replace("/")}
-                            >
-                                <RemixIcon
-                                    name="message-3-line"
-                                    size={FontSizes.xs}
-                                    color={Colors.buttonPrimaryText}
-                                />
-                                <Text style={styles.activeChatButtonText}>
-                                    Chat
-                                </Text>
-                            </Pressable>
-                        </View>
-                    )}
 
                     {/* Top Header */}
                     <View style={styles.topHeader}>
@@ -334,6 +292,64 @@ export default function Models() {
                     )}
                 </ScrollView>
             </View>
+            {/* Active Model Indicator Banner */}
+            {activeModel && (
+                <View
+                    onLayout={(e) => {
+                        const height = Math.round(e.nativeEvent.layout.height);
+                        if (height > 0) {
+                            setActiveContainerHeight(height);
+                        }
+                    }}
+                    style={[
+                        styles.activeModelContainer,
+                        {
+                            paddingBottom: insets.bottom + 16,
+                        },
+                    ]}
+                >
+                    <LinearGradient
+                        style={[{ ...StyleSheet.absoluteFill }]}
+                        colors={["transparent", Colors.surface]}
+                        locations={[0, 0.3]}
+                        pointerEvents="none"
+                    />
+                    <View style={styles.activeModelCard}>
+                        <View style={styles.activeModelLeft}>
+                            <View style={styles.activeIconWrapper}>
+                                <RemixIcon
+                                    name="brain-line"
+                                    size={FontSizes.md}
+                                    color={Colors.textInverse}
+                                />
+                            </View>
+                            <View style={styles.activeModelText}>
+                                <Text style={styles.activeBadge}>
+                                    Active Model
+                                </Text>
+                                <Text
+                                    style={styles.activeModelName}
+                                    numberOfLines={1}
+                                >
+                                    {activeModel.name}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.activeChatButton,
+                                pressed && styles.buttonPressed,
+                            ]}
+                            onPress={() => router.replace("/")}
+                        >
+                            <Text style={styles.activeChatButtonText}>
+                                Chat
+                            </Text>
+                        </Pressable>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
@@ -463,7 +479,7 @@ const ModelCard = memo(
                             <RemixIcon
                                 name={
                                     isCurrentActive
-                                        ? "cpu-fill"
+                                        ? "cpu-line"
                                         : "checkbox-circle-fill"
                                 }
                                 size={FontSizes.xs}
@@ -490,7 +506,7 @@ const ModelCard = memo(
                 <View style={styles.specsRow}>
                     <View style={styles.specBadge}>
                         <RemixIcon
-                            name="hard-drive-2-line"
+                            name="download-cloud-2-line"
                             size={12}
                             color={Colors.textSecondary}
                         />
@@ -868,12 +884,23 @@ const styles = StyleSheet.create({
     },
 
     /* Active Model Card Banner */
+    activeModelContainer: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: "100%",
+        flexShrink: 0,
+        paddingTop: 32,
+        paddingHorizontal: 16,
+    },
     activeModelCard: {
+        minHeight: 56,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: Colors.surfaceSecondary,
-        borderRadius: 16,
+        backgroundColor: Colors.primary,
+        borderRadius: 999,
         padding: 12,
     },
 
@@ -886,59 +913,44 @@ const styles = StyleSheet.create({
     },
 
     activeIconWrapper: {
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        backgroundColor: Colors.surface,
+        width: 36,
+        height: 36,
+        borderRadius: 999,
+        backgroundColor: Colors.secondary,
         alignItems: "center",
         justifyContent: "center",
     },
 
-    activeModelTextCol: {
+    activeModelText: {
         flex: 1,
     },
 
-    activeLabelRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
-    },
-
-    activeIndicatorDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: "#16A34A",
-    },
-
-    activeBadgeLabel: {
+    activeBadge: {
         fontFamily: "DMSans-Medium",
         fontSize: FontSizes.xs,
-        color: Colors.textSecondary,
+        color: Colors.textMuted,
     },
 
     activeModelName: {
         fontFamily: "Sora-SemiBold",
         fontSize: FontSizes.sm,
-        color: Colors.text,
-        marginTop: 1,
+        color: Colors.textInverse,
+        marginTop: -4,
     },
 
     activeChatButton: {
-        flexDirection: "row",
+        height: 36,
+        width: 64,
+        borderRadius: 20,
+        backgroundColor: Colors.surface,
         alignItems: "center",
         justifyContent: "center",
-        gap: 6,
-        backgroundColor: Colors.buttonPrimary,
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 999,
     },
 
     activeChatButtonText: {
+        fontSize: FontSizes.sm,
         fontFamily: "DMSans-SemiBold",
-        fontSize: FontSizes.xs,
-        color: Colors.buttonPrimaryText,
+        color: Colors.text,
     },
 
     /* Model Card */

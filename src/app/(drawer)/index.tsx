@@ -19,6 +19,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import {
+    ActivityIndicator,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -54,6 +55,7 @@ export default function Index() {
         measuredHeaderHeight > 0 ? measuredHeaderHeight : insets.top + 64;
 
     const activeModel = useModelStore((state) => state.activeModelId);
+    const isModelLoading = useModelStore((state) => state.isModelLoading);
 
     const chatOptionsOpen = useLayoutStore((state) => state.chatOptionsOpen);
     const setChatOptionsOpen = useLayoutStore(
@@ -843,11 +845,13 @@ export default function Index() {
                         placeholder={
                             generating
                                 ? "Generating response..."
-                                : activeModel
-                                  ? "Ask anything"
-                                  : activeChatId
-                                    ? "Load a model to continue"
-                                    : "Load a model to start"
+                                : isModelLoading
+                                  ? "Loading a model..."
+                                  : activeModel
+                                    ? "Ask anything"
+                                    : activeChatId
+                                      ? "Load a model to continue"
+                                      : "Load a model to start"
                         }
                         placeholderTextColor={Colors.textMuted}
                         value={value}
@@ -873,7 +877,9 @@ export default function Index() {
                     <Pressable
                         style={[
                             styles.sendButton,
-                            !activeModel && styles.loadButton,
+                            !activeModel &&
+                                !isModelLoading &&
+                                styles.loadButton,
                             !generating &&
                                 activeModel &&
                                 !value.trim() &&
@@ -882,16 +888,26 @@ export default function Index() {
                         onPress={
                             generating
                                 ? stopGeneration
-                                : activeModel
-                                  ? sendMessage
-                                  : openModels
+                                : isModelLoading
+                                  ? undefined
+                                  : activeModel
+                                    ? sendMessage
+                                    : openModels
                         }
-                        disabled={!generating && !!activeModel && !value.trim()}
+                        disabled={
+                            isModelLoading ||
+                            (!generating && !!activeModel && !value.trim())
+                        }
                     >
                         {generating ? (
                             <RemixIcon
                                 name="stop-fill"
                                 size={FontSizes.xl}
+                                color={Colors.text}
+                            />
+                        ) : isModelLoading ? (
+                            <ActivityIndicator
+                                size="small"
                                 color={Colors.text}
                             />
                         ) : activeModel ? (

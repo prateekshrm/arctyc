@@ -74,7 +74,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                 >
                     <RemixIcon
                         name="close-line"
-                        size={20}
+                        size={FontSizes.xl}
                         color={Colors.textInverse}
                     />
                 </Pressable>
@@ -140,7 +140,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                                         >
                                             <RemixIcon
                                                 name="message-3-line"
-                                                size={18}
+                                                size={FontSizes.lg}
                                                 color={
                                                     isActive
                                                         ? Colors.text
@@ -171,7 +171,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                                         >
                                             <RemixIcon
                                                 name="delete-bin-line"
-                                                size={16}
+                                                size={FontSizes.md}
                                                 color={Colors.muted}
                                             />
                                         </Pressable>
@@ -206,7 +206,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                         name={
                             pathname === "/models" ? "stack-fill" : "stack-line"
                         }
-                        size={20}
+                        size={FontSizes.xl}
                         color={Colors.text}
                     />
                     <Text style={styles.navItemText}>Models</Text>
@@ -229,7 +229,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
                                 ? "settings-4-fill"
                                 : "settings-4-line"
                         }
-                        size={20}
+                        size={FontSizes.xl}
                         color={Colors.text}
                     />
                     <Text style={styles.navItemText}>Settings</Text>
