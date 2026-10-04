@@ -1,16 +1,37 @@
 import { Colors, FontSizes } from "@/constants/theme";
+import { useDialogStore } from "@/stores/dialog.store";
+import { Linking } from "react-native";
 import { EnrichedMarkdownText } from "react-native-enriched-markdown";
 
 interface MarkdownProps {
     markdown: string;
+    generating: boolean;
 }
 
-const Markdown = ({ markdown }: MarkdownProps) => {
+const Markdown = ({ markdown, generating }: MarkdownProps) => {
+    const showDialog = useDialogStore((state) => state.showDialog);
+
+    const handleLinkPress = ({ url }: { url: string }) => {
+        showDialog({
+            title: "Open Link",
+            message:
+                "Do you want to open this link? This will take you out of the application.",
+            confirmButton: {
+                label: "Open",
+                onPress: () => Linking.openURL(url),
+            },
+            dismissButton: {
+                label: "Cancel",
+            },
+        });
+    };
+
     return (
         <EnrichedMarkdownText
             flavor="github"
             streamingAnimation={true}
             markdown={markdown}
+            selectable={!generating}
             markdownStyle={{
                 // ─────────────────────────────
                 // HEADINGS
@@ -178,6 +199,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                     checkboxSize: 16,
                 },
             }}
+            onLinkPress={handleLinkPress}
         />
     );
 };

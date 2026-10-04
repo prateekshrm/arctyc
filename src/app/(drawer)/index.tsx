@@ -677,6 +677,7 @@ export default function Index() {
                                               ) : (
                                                   <Markdown
                                                       markdown={message.content}
+                                                      generating={generating}
                                                   />
                                               )}
                                           </View>
