@@ -32,6 +32,7 @@ import {
     ToastAndroid,
     View,
 } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -810,6 +811,23 @@ export default function Index() {
                                 </View>
                             </View>
                         )}
+                        {!generating &&
+                            !thinking &&
+                            messages.length > 0 &&
+                            messages[messages.length - 1]?.role ===
+                                "assistant" &&
+                            ["complete", "stopped"].includes(
+                                messages[messages.length - 1]?.status ?? "",
+                            ) && (
+                                <Animated.Text
+                                    entering={FadeIn.duration(250)}
+                                    exiting={FadeOut.duration(250)}
+                                    style={styles.aiDisclaimer}
+                                >
+                                    AI can make mistakes. Check important
+                                    information.
+                                </Animated.Text>
+                            )}
                     </ScrollView>
                 ) : (
                     renderNoModelState()
@@ -1079,6 +1097,13 @@ const styles = StyleSheet.create({
 
     userMessageText: {
         color: Colors.textInverse,
+    },
+
+    aiDisclaimer: {
+        fontSize: FontSizes.sm,
+        fontFamily: "DMSans-Regular",
+        color: Colors.textMuted,
+        marginBottom: 16,
     },
 
     /*

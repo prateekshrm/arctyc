@@ -137,7 +137,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                     fontSize: FontSizes.sm,
                     lineHeight: FontSizes.sm * 1.5,
                     padding: 12,
-                    borderRadius: 8,
+                    borderRadius: 16,
                     borderWidth: 1,
                     marginTop: 8,
                     marginBottom: 12,
@@ -162,7 +162,7 @@ const Markdown = ({ markdown }: MarkdownProps) => {
                 // ─────────────────────────────
 
                 image: {
-                    borderRadius: 8,
+                    borderRadius: 16,
                     marginBottom: 12,
                 },
 
