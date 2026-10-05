@@ -64,7 +64,10 @@ const About = () => {
 
                         <View style={styles.card}>
                             <Pressable
-                                style={styles.linkItem}
+                                style={({ pressed }) => [
+                                    styles.linkItem,
+                                    pressed && styles.linkItemPressed,
+                                ]}
                                 onPress={() => Linking.openURL(REPOSITORY_URL)}
                             >
                                 <View style={styles.linkIcon}>
@@ -264,16 +267,23 @@ const styles = StyleSheet.create({
     // Project links
 
     card: {
+        backgroundColor: Colors.surface,
         borderRadius: 16,
+        gap: 2,
         overflow: "hidden",
-        backgroundColor: Colors.surfaceSecondary,
     },
 
     linkItem: {
+        backgroundColor: Colors.surfaceSecondary,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
         padding: 10,
         paddingRight: 12,
+    },
+
+    linkItemPressed: {
+        filter: "brightness(0.95)",
     },
 
     linkIcon: {
@@ -291,9 +301,9 @@ const styles = StyleSheet.create({
     },
 
     linkTitle: {
-        fontSize: FontSizes.lg,
+        fontSize: FontSizes.md,
         color: Colors.text,
-        fontFamily: "DMSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
     },
 
     linkDescription: {
@@ -325,9 +335,9 @@ const styles = StyleSheet.create({
     },
 
     authorName: {
-        fontSize: FontSizes.lg,
+        fontSize: FontSizes.md,
         color: Colors.text,
-        fontFamily: "DMSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
     },
 
     authorBio: {

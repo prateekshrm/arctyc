@@ -32,7 +32,7 @@ import {
     ToastAndroid,
     View,
 } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -822,7 +822,6 @@ export default function Index() {
                             ) && (
                                 <Animated.Text
                                     entering={FadeIn.duration(250)}
-                                    exiting={FadeOut.duration(250)}
                                     style={styles.aiDisclaimer}
                                 >
                                     AI can make mistakes. Check important

@@ -113,7 +113,10 @@ const Settings = () => {
                                 {section.items.map((setting) => (
                                     <Pressable
                                         key={setting.title}
-                                        style={styles.setting}
+                                        style={({ pressed }) => [
+                                            styles.setting,
+                                            pressed && styles.settingPressed,
+                                        ]}
                                         onPress={setting.onPress}
                                     >
                                         <View style={styles.settingLeft}>
@@ -196,17 +199,23 @@ const styles = StyleSheet.create({
     },
 
     sectionItems: {
-        gap: 8,
+        backgroundColor: Colors.surface,
+        borderRadius: 16,
+        gap: 2,
+        overflow: "hidden",
     },
 
     setting: {
-        borderRadius: 16,
         backgroundColor: Colors.surfaceSecondary,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
         padding: 10,
         paddingRight: 12,
+    },
+
+    settingPressed: {
+        filter: "brightness(0.95)",
     },
 
     settingLeft: {
@@ -230,9 +239,9 @@ const styles = StyleSheet.create({
     },
 
     settingTitle: {
-        fontSize: FontSizes.lg,
+        fontSize: FontSizes.md,
         color: Colors.text,
-        fontFamily: "DMSans-SemiBold",
+        fontFamily: "Sora-SemiBold",
     },
 
     settingDescription: {
