@@ -1,58 +1,36 @@
 import { Model, useModelStore } from "@/stores/models.store";
 import { DeviceCapabilities } from "@/utils/device-capabilities";
 
+export function isModelSupported(
+    model: Pick<Model, "requirements">,
+    device: DeviceCapabilities,
+): boolean {
+    const ram = device.advertisedRamGB ?? device.totalRamGB;
+    if (ram === null) {
+        return true;
+    }
+    return ram >= model.requirements.minimumRamGB;
+}
+
 export function getModelRecommendations(
     device: DeviceCapabilities,
     models: Model[] = useModelStore.getState().models,
 ): Model[] {
-    return models
-        .filter((model) => {
-            if (
-                device.totalRamGB !== null &&
-                device.totalRamGB < model.requirements.minimumRamGB
-            ) {
-                return false;
-            }
+    const supportedModels = models.filter((model) =>
+        isModelSupported(model, device),
+    );
 
-            const modelSizeGB = model.sizeBytes / 1024 ** 3;
-
-            if (device.freeStorageGB < modelSizeGB) {
-                return false;
-            }
-
-            return true;
-        })
-        .map((model) => ({
-            model,
-            score: calculateScore(model, device),
-        }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 2)
-        .map(({ model }) => model);
-}
-
-function calculateScore(
-    model: Model,
-    device: DeviceCapabilities,
-): number {
-    let score = model.qualityScore;
-
-    const ram = device.totalRamGB;
-    const modelSizeGB = model.sizeBytes / 1024 ** 3;
-
-    if (ram === null) {
-        score += 0;
-    } else if (ram >= model.requirements.recommendedRamGB) {
-        score += 30;
-    } else {
-        score -= 20;
+    if (supportedModels.length === 0) {
+        return [];
     }
 
-    if (device.freeStorageGB >= modelSizeGB * 3) {
-        score += 10;
-    } else if (device.freeStorageGB >= modelSizeGB * 2) {
-        score += 5;
-    }
+    // Recommend models purely on the basis of minimum RAM required:
+    // Select models matching the highest supported minimum RAM tier for this device
+    const maxSupportedMinRam = Math.max(
+        ...supportedModels.map((m) => m.requirements.minimumRamGB),
+    );
 
-    return score;
+    return supportedModels.filter(
+        (m) => m.requirements.minimumRamGB === maxSupportedMinRam,
+    );
 }

@@ -2,6 +2,7 @@ import { llama } from "@react-native-ai/llama";
 import { Directory, DownloadTask, File, Paths } from "expo-file-system";
 
 import { useModelStore } from "@/stores/models.store";
+import { getDeviceCapabilities } from "@/utils/device-capabilities";
 
 const activeDownloadTasks = new Map<string, DownloadTask>();
 const cancelledDownloadIds = new Set<string>();
@@ -102,6 +103,16 @@ export async function checkModel(id: string) {
 export async function downloadModel(id: string) {
     const model = getModelById(id);
     const store = useModelStore.getState();
+
+    // Strictly restrict download if the user's device cannot handle this model
+    const device = getDeviceCapabilities();
+    const deviceRam = device.advertisedRamGB ?? device.totalRamGB;
+    if (deviceRam !== null && deviceRam < model.requirements.minimumRamGB) {
+        throw new Error(
+            `Device cannot handle this model. ${model.name} requires at least ${model.requirements.minimumRamGB} GB of RAM, but device has ${deviceRam} GB.`,
+        );
+    }
+
     const { repo, filename, targetFile, tempFile } = getModelFiles(
         model.modelId,
     );
@@ -379,6 +390,15 @@ export async function loadModel(id: string) {
     // Unload any currently active model first to ensure only 1 model is loaded into memory
     if (store.activeModelId || activeLanguageModel) {
         await unloadModel();
+    }
+
+    // Strictly check if device can handle this model
+    const device = getDeviceCapabilities();
+    const deviceRam = device.advertisedRamGB ?? device.totalRamGB;
+    if (deviceRam !== null && deviceRam < model.requirements.minimumRamGB) {
+        throw new Error(
+            `Device cannot handle this model. ${model.name} requires at least ${model.requirements.minimumRamGB} GB of RAM, but device has ${deviceRam} GB.`,
+        );
     }
 
     const downloaded = await checkModel(id);

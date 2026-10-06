@@ -60,8 +60,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 484 * MB,
 
         requirements: {
-            minimumRamGB: 3,
-            recommendedRamGB: 4,
+            minimumRamGB: 4,
+            recommendedRamGB: 6,
         },
 
         capabilities: ["chat", "reasoning", "multilingual"],
@@ -86,8 +86,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 1.28 * GB,
 
         requirements: {
-            minimumRamGB: 4,
-            recommendedRamGB: 6,
+            minimumRamGB: 6,
+            recommendedRamGB: 8,
         },
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
@@ -112,8 +112,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 2.5 * GB,
 
         requirements: {
-            minimumRamGB: 6,
-            recommendedRamGB: 8,
+            minimumRamGB: 8,
+            recommendedRamGB: 12,
         },
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
@@ -138,8 +138,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 5.03 * GB,
 
         requirements: {
-            minimumRamGB: 10,
-            recommendedRamGB: 12,
+            minimumRamGB: 12,
+            recommendedRamGB: 16,
         },
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
@@ -169,8 +169,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 691 * MB,
 
         requirements: {
-            minimumRamGB: 3,
-            recommendedRamGB: 4,
+            minimumRamGB: 4,
+            recommendedRamGB: 6,
         },
 
         capabilities: ["chat", "coding"],
@@ -196,8 +196,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 1.69 * GB,
 
         requirements: {
-            minimumRamGB: 6,
-            recommendedRamGB: 8,
+            minimumRamGB: 8,
+            recommendedRamGB: 12,
         },
 
         capabilities: ["chat", "coding"],
@@ -226,8 +226,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 806 * MB,
 
         requirements: {
-            minimumRamGB: 3,
-            recommendedRamGB: 4,
+            minimumRamGB: 4,
+            recommendedRamGB: 6,
         },
 
         capabilities: ["chat", "multilingual"],
@@ -252,8 +252,8 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         sizeBytes: 2.49 * GB,
 
         requirements: {
-            minimumRamGB: 6,
-            recommendedRamGB: 8,
+            minimumRamGB: 8,
+            recommendedRamGB: 12,
         },
 
         capabilities: ["chat", "reasoning", "multilingual", "vision"],

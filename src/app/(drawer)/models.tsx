@@ -25,7 +25,10 @@ import {
     DeviceCapabilities,
     getDeviceCapabilities,
 } from "@/utils/device-capabilities";
-import { getModelRecommendations } from "@/utils/model-recommendation";
+import {
+    getModelRecommendations,
+    isModelSupported,
+} from "@/utils/model-recommendation";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -64,10 +67,26 @@ export default function Models() {
         () => new Set(recommendedModels.map((m) => m.id)),
         [recommendedModels],
     );
-    const otherModels = useMemo(
-        () => models.filter((m) => !recommendedIds.has(m.id)),
-        [models, recommendedIds],
-    );
+    const otherModels = useMemo(() => {
+        const remaining = models.filter((m) => !recommendedIds.has(m.id));
+        const supported = remaining.filter((m) => isModelSupported(m, device));
+        const unsupported = remaining.filter(
+            (m) => !isModelSupported(m, device),
+        );
+
+        // Sort supported others by min RAM descending
+        supported.sort(
+            (a, b) => b.requirements.minimumRamGB - a.requirements.minimumRamGB,
+        );
+
+        // Sort unsupported others by min RAM ascending (closer-to-supported first)
+        unsupported.sort(
+            (a, b) => a.requirements.minimumRamGB - b.requirements.minimumRamGB,
+        );
+
+        // Place other supported models first, with not supported models at the very bottom
+        return [...supported, ...unsupported];
+    }, [models, recommendedIds, device]);
 
     const installedModels = useMemo(
         () =>
@@ -139,9 +158,17 @@ export default function Models() {
                                     <Pressable
                                         onPress={() =>
                                             showDialog({
-                                                title: "About usable RAM",
-                                                message:
-                                                    "The RAM shown here is usable memory reported by your device. It may be slightly lower than advertised because some is reserved for the system.",
+                                                title: "Usable RAM",
+                                                message: `The RAM shown here is the usable memory reported by your device${
+                                                    device.totalRamGB !== null
+                                                        ? ` (${device.totalRamGB.toFixed(1)} GB)`
+                                                        : ""
+                                                }. It is lower than the advertised RAM${
+                                                    device.advertisedRamGB !==
+                                                    null
+                                                        ? ` (${device.advertisedRamGB} GB)`
+                                                        : ""
+                                                } because part of it is reserved by the system and hardware.`,
                                                 confirmButton: {
                                                     label: "OK",
                                                 },
@@ -369,8 +396,23 @@ const ModelCard = memo(
         const progressPercent = Math.round(progress * 100);
 
         const [isLocalLoading, setIsLocalLoading] = useState(false);
+        const isUnsupported = !isModelSupported(model, device);
 
         const handleDownload = () => {
+            if (isUnsupported) {
+                const deviceRam = device.advertisedRamGB ?? device.totalRamGB;
+                showDialog({
+                    title: "Model Not Supported",
+                    message: `Your phone can't handle this model. ${model.name} requires at least ${model.requirements.minimumRamGB} GB of RAM, but your device has ${
+                        deviceRam !== null ? `${deviceRam} GB` : "insufficient"
+                    } of RAM.`,
+                    confirmButton: {
+                        label: "OK",
+                    },
+                });
+                return;
+            }
+
             const modelSizeGB = model.sizeBytes / 1024 ** 3;
 
             if (device.freeStorageGB < modelSizeGB) {
@@ -381,31 +423,6 @@ const ModelCard = memo(
                     )} of storage, but your device doesn't have enough free space. Free up some storage and try again.`,
                     confirmButton: {
                         label: "OK",
-                    },
-                });
-                return;
-            }
-
-            if (
-                device.totalRamGB !== null &&
-                model.requirements.minimumRamGB > device.totalRamGB
-            ) {
-                showDialog({
-                    title: "Model may not run well",
-                    message: `This model requires at least ${
-                        model.requirements.minimumRamGB
-                    } GB of RAM, while your device has ${
-                        device.totalRamGB
-                    } GB of usable RAM. It may fail to load or run slowly.`,
-                    confirmButton: {
-                        label: "Download Anyway",
-                        variant: "destructive",
-                        onPress: () => {
-                            downloadModel(model.id).catch(() => {});
-                        },
-                    },
-                    dismissButton: {
-                        label: "Cancel",
                     },
                 });
                 return;
@@ -436,6 +453,20 @@ const ModelCard = memo(
         };
 
         const handleLoad = async () => {
+            if (isUnsupported) {
+                const deviceRam = device.advertisedRamGB ?? device.totalRamGB;
+                showDialog({
+                    title: "Model Not Supported",
+                    message: `Your phone can't handle this model. Running ${model.name} requires at least ${model.requirements.minimumRamGB} GB of RAM, but your device has ${
+                        deviceRam !== null ? `${deviceRam} GB` : "insufficient"
+                    } of RAM.`,
+                    confirmButton: {
+                        label: "OK",
+                    },
+                });
+                return;
+            }
+
             setIsLocalLoading(true);
             try {
                 await loadModel(model.id);
@@ -469,7 +500,7 @@ const ModelCard = memo(
                         </Text>
                     </View>
 
-                    {isDownloaded && (
+                    {isDownloaded ? (
                         <View
                             style={[
                                 styles.statusBadge,
@@ -499,7 +530,18 @@ const ModelCard = memo(
                                 {isCurrentActive ? "Active" : "Downloaded"}
                             </Text>
                         </View>
-                    )}
+                    ) : isUnsupported ? (
+                        <View style={styles.unsupportedBadge}>
+                            <RemixIcon
+                                name="forbid-line"
+                                size={FontSizes.xs}
+                                color={Colors.error}
+                            />
+                            <Text style={styles.unsupportedBadgeText}>
+                                Not Supported
+                            </Text>
+                        </View>
+                    ) : null}
                 </View>
 
                 {/* Compact Spec Badges */}
@@ -526,13 +568,32 @@ const ModelCard = memo(
                         </Text>
                     </View>
 
-                    <View style={styles.specBadge}>
+                    <View
+                        style={[
+                            styles.specBadge,
+                            isUnsupported && styles.specBadgeUnsupported,
+                        ]}
+                    >
                         <RemixIcon
-                            name="dashboard-3-line"
+                            name={
+                                isUnsupported
+                                    ? "error-warning-line"
+                                    : "dashboard-3-line"
+                            }
                             size={12}
-                            color={Colors.textSecondary}
+                            color={
+                                isUnsupported
+                                    ? Colors.error
+                                    : Colors.textSecondary
+                            }
                         />
-                        <Text style={styles.specBadgeText}>
+                        <Text
+                            style={[
+                                styles.specBadgeText,
+                                isUnsupported &&
+                                    styles.specBadgeTextUnsupported,
+                            ]}
+                        >
                             {model.requirements.minimumRamGB} GB+ RAM
                         </Text>
                     </View>
@@ -708,20 +769,41 @@ const ModelCard = memo(
                             onPress={handleDownload}
                             style={({ pressed }) => [
                                 styles.pillButtonPrimary,
-                                pressed && styles.buttonPressed,
+                                isUnsupported && styles.pillButtonDisabled,
+                                pressed &&
+                                    !isUnsupported &&
+                                    styles.buttonPressed,
                             ]}
                         >
                             <RemixIcon
-                                name="download-line"
+                                name={
+                                    isUnsupported
+                                        ? "forbid-2-line"
+                                        : "download-line"
+                                }
                                 size={FontSizes.sm}
-                                color={Colors.buttonPrimaryText}
+                                color={
+                                    isUnsupported
+                                        ? Colors.textMuted
+                                        : Colors.buttonPrimaryText
+                                }
                             />
-                            <Text style={styles.pillButtonPrimaryText}>
-                                {isError
-                                    ? "Retry Download"
-                                    : `Download (${formatBytes(
+                            <Text
+                                style={[
+                                    styles.pillButtonPrimaryText,
+                                    isUnsupported &&
+                                        styles.pillButtonDisabledText,
+                                ]}
+                            >
+                                {isUnsupported
+                                    ? `Not Supported (${formatBytes(
                                           model.sizeBytes,
-                                      )})`}
+                                      )})`
+                                    : isError
+                                      ? "Retry Download"
+                                      : `Download (${formatBytes(
+                                            model.sizeBytes,
+                                        )})`}
                             </Text>
                         </Pressable>
                     )}
@@ -1019,6 +1101,24 @@ const styles = StyleSheet.create({
         color: Colors.textInverse,
     },
 
+    unsupportedBadge: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 999,
+        backgroundColor: Colors.errorSurface,
+        borderWidth: 1,
+        borderColor: Colors.errorBorder,
+    },
+
+    unsupportedBadgeText: {
+        fontFamily: "DMSans-SemiBold",
+        fontSize: 11,
+        color: Colors.error,
+    },
+
     /* Specs Row */
     specsRow: {
         flexDirection: "row",
@@ -1040,10 +1140,19 @@ const styles = StyleSheet.create({
         borderColor: Colors.border,
     },
 
+    specBadgeUnsupported: {
+        backgroundColor: Colors.errorSurface,
+        borderColor: Colors.errorBorder,
+    },
+
     specBadgeText: {
         fontFamily: "DMSans-Medium",
         fontSize: 11,
         color: Colors.textSecondary,
+    },
+
+    specBadgeTextUnsupported: {
+        color: Colors.error,
     },
 
     /* Error Box */
@@ -1160,6 +1269,17 @@ const styles = StyleSheet.create({
 
     pillButtonLoading: {
         opacity: 0.8,
+    },
+
+    pillButtonDisabled: {
+        backgroundColor: Colors.surface,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        opacity: 0.6,
+    },
+
+    pillButtonDisabledText: {
+        color: Colors.textMuted,
     },
 
     deleteIconButton: {
