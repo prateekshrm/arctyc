@@ -345,7 +345,7 @@ export default function Models() {
                         <View style={styles.activeModelLeft}>
                             <View style={styles.activeIconWrapper}>
                                 <RemixIcon
-                                    name="brain-line"
+                                    name="cpu-line"
                                     size={FontSizes.md}
                                     color={Colors.textInverse}
                                 />
@@ -533,7 +533,7 @@ const ModelCard = memo(
                     ) : isUnsupported ? (
                         <View style={styles.unsupportedBadge}>
                             <RemixIcon
-                                name="forbid-line"
+                                name="forbid-2-line"
                                 size={FontSizes.xs}
                                 color={Colors.error}
                             />
