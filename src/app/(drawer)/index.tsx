@@ -10,6 +10,7 @@ import { useChatStore } from "@/stores/chat.store";
 import { useDialogStore } from "@/stores/dialog.store";
 import { useLayoutStore } from "@/stores/layout.store";
 import { useModelStore } from "@/stores/models.store";
+import { toast } from "@/stores/toast.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
 import * as Clipboard from "expo-clipboard";
@@ -29,7 +30,6 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    ToastAndroid,
     View,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -179,7 +179,10 @@ export default function Index() {
 
         if (!model) {
             console.log("No active model");
-            ToastAndroid.show("No active model", ToastAndroid.SHORT);
+            toast.error(
+                "No Model Loaded",
+                "Select or download a model to continue",
+            );
             return;
         }
 
@@ -350,7 +353,10 @@ export default function Index() {
 
         if (!model) {
             console.log("No active model");
-            ToastAndroid.show("No active model", ToastAndroid.SHORT);
+            toast.error(
+                "No Model Loaded",
+                "Select or download a model to continue",
+            );
             return;
         }
 
@@ -437,7 +443,14 @@ export default function Index() {
             confirmButton: {
                 label: "Delete",
                 variant: "destructive",
-                onPress: () => deleteChat(activeChatId as string),
+                onPress: () => {
+                    deleteChat(activeChatId as string);
+                    toast.show(
+                        "Chat deleted",
+                        "The chat has been permanently deleted",
+                        "delete-bin-line",
+                    );
+                },
             },
             dismissButton: {
                 label: "Cancel",
@@ -447,7 +460,11 @@ export default function Index() {
 
     const handleCopyMessage = async (message: string) => {
         await Clipboard.setStringAsync(message);
-        ToastAndroid.show("Copied!", ToastAndroid.SHORT);
+        toast.show(
+            "Copied to clipboard",
+            "Message copied successfully",
+            "file-copy-line",
+        );
     };
 
     const handleEditMessage = async (messageId: string) => {
@@ -458,7 +475,10 @@ export default function Index() {
         const model = getActiveLanguageModel();
         if (!model) {
             console.log("No active model");
-            ToastAndroid.show("No active model", ToastAndroid.SHORT);
+            toast.error(
+                "No Model Loaded",
+                "Select or download a model to continue",
+            );
             return;
         }
 
@@ -498,7 +518,10 @@ export default function Index() {
         const model = getActiveLanguageModel();
         if (!model) {
             console.log("No active model");
-            ToastAndroid.show("No active model", ToastAndroid.SHORT);
+            toast.error(
+                "No Model Loaded",
+                "Select or download a model to continue",
+            );
             return;
         }
 

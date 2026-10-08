@@ -693,7 +693,7 @@ const ModelCard = memo(
                                         ]}
                                     >
                                         <RemixIcon
-                                            name="stop-circle-line"
+                                            name="eject-line"
                                             size={FontSizes.sm}
                                             color={Colors.buttonSecondaryText}
                                         />

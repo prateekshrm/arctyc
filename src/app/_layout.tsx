@@ -1,4 +1,5 @@
 import Dialog from "@/components/ui/Dialog";
+import Toast from "@/components/ui/Toast";
 import Header from "@/components/ui/Header";
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
@@ -43,6 +44,7 @@ export default function RootLayout() {
     return (
         <>
             <Dialog />
+            <Toast />
             <Stack
                 screenOptions={{
                     header: ({ options }) => (

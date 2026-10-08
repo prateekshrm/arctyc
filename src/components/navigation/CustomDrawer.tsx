@@ -1,5 +1,6 @@
 import { useChatStore } from "@/stores/chat.store";
 import { useDialogStore } from "@/stores/dialog.store";
+import { toast } from "@/stores/toast.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { router, usePathname } from "expo-router";
 import { DrawerContentComponentProps } from "expo-router/drawer";
@@ -48,7 +49,14 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
             confirmButton: {
                 label: "Delete",
                 variant: "destructive",
-                onPress: () => deleteChat(chatId),
+                onPress: () => {
+                    deleteChat(chatId);
+                    toast.show(
+                        "Chat deleted",
+                        "The chat has been permanently deleted",
+                        "delete-bin-line",
+                    );
+                },
             },
             dismissButton: {
                 label: "Cancel",

@@ -1,17 +1,11 @@
 import { useChatStore } from "@/stores/chat.store";
 import { useDialogStore } from "@/stores/dialog.store";
 import { usePreferencesStore } from "@/stores/preferences.store";
+import { toast } from "@/stores/toast.store";
 import { Colors, FontSizes } from "@constants/theme";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    ToastAndroid,
-    View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -46,9 +40,10 @@ const Settings = () => {
                     variant: "destructive",
                     onPress: () => {
                         deleteAllChats();
-                        ToastAndroid.show(
-                            "Deleted all chats!",
-                            ToastAndroid.SHORT,
+                        toast.show(
+                            "Chats deleted",
+                            "All chats have been permanently deleted",
+                            "delete-bin-line",
                         );
                     },
                 },
@@ -57,7 +52,11 @@ const Settings = () => {
                 },
             });
         } else {
-            ToastAndroid.show("No chats to delete!", ToastAndroid.SHORT);
+            toast.show(
+                "No chats to delete",
+                "You don't have any chats yet",
+                "chat-delete-line",
+            );
         }
     };
 
