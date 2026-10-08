@@ -1,5 +1,7 @@
 import { Colors, FontSizes } from "@/constants/theme";
 import { AlertDialog, Host, Text, TextButton } from "@expo/ui/jetpack-compose";
+import { useEffect } from "react";
+import { Alert, Platform } from "react-native";
 import { useDialogStore } from "../../stores/dialog.store";
 
 export default function Dialog() {
@@ -24,7 +26,36 @@ export default function Dialog() {
         await dismissButton?.onPress?.();
     };
 
-    if (!visible) {
+    useEffect(() => {
+        if (Platform.OS === "ios" && visible) {
+            const buttons = [];
+
+            if (dismissButton) {
+                buttons.push({
+                    text: dismissButton.label,
+                    onPress: handleDismiss,
+                });
+            }
+
+            if (confirmButton) {
+                buttons.push({
+                    text: confirmButton.label,
+                    onPress: handleConfirm,
+                });
+            }
+
+            if (buttons.length === 0) {
+                buttons.push({
+                    text: "OK",
+                    onPress: hideDialog,
+                });
+            }
+
+            Alert.alert(title, message, buttons);
+        }
+    }, [visible, title, message, confirmButton, dismissButton]);
+
+    if (Platform.OS !== "android" || !visible) {
         return null;
     }
 
