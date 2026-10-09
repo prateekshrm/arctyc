@@ -25,10 +25,7 @@ import {
     DeviceCapabilities,
     getDeviceCapabilities,
 } from "@/utils/device-capabilities";
-import {
-    getModelRecommendations,
-    isModelSupported,
-} from "@/utils/model-recommendation";
+import { isModelSupported } from "@/utils/model-support";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -59,44 +56,20 @@ export default function Models() {
         return null;
     }
 
-    const recommendedModels = useMemo(
-        () => getModelRecommendations(device, models),
-        [device, models],
+    const sortedModels = useMemo(
+        () => [...models].sort((a, b) => a.sizeBytes - b.sizeBytes),
+        [models],
     );
-    const recommendedIds = useMemo(
-        () => new Set(recommendedModels.map((m) => m.id)),
-        [recommendedModels],
-    );
-    const otherModels = useMemo(() => {
-        const remaining = models.filter((m) => !recommendedIds.has(m.id));
-        const supported = remaining.filter((m) => isModelSupported(m, device));
-        const unsupported = remaining.filter(
-            (m) => !isModelSupported(m, device),
-        );
-
-        // Sort supported others by min RAM descending
-        supported.sort(
-            (a, b) => b.requirements.minimumRamGB - a.requirements.minimumRamGB,
-        );
-
-        // Sort unsupported others by min RAM ascending (closer-to-supported first)
-        unsupported.sort(
-            (a, b) => a.requirements.minimumRamGB - b.requirements.minimumRamGB,
-        );
-
-        // Place other supported models first, with not supported models at the very bottom
-        return [...supported, ...unsupported];
-    }, [models, recommendedIds, device]);
 
     const installedModels = useMemo(
         () =>
-            models.filter(
+            sortedModels.filter(
                 (m) =>
                     m.status === "downloaded" ||
                     m.status === "loaded" ||
                     m.status === "loading",
             ),
-        [models],
+        [sortedModels],
     );
 
     const activeModel = useMemo(
@@ -246,55 +219,26 @@ export default function Models() {
                     )}
 
                     {activeTab === "all" || installedModels.length === 0 ? (
-                        <>
-                            {recommendedModels.length > 0 && (
-                                <View style={styles.section}>
-                                    <View style={styles.sectionHeader}>
-                                        <Text style={styles.sectionTitle}>
-                                            Recommended
-                                        </Text>
-                                        <Text style={styles.sectionDescription}>
-                                            Optimized for your device memory and
-                                            storage
-                                        </Text>
-                                    </View>
-
-                                    <View style={styles.modelsGrid}>
-                                        {recommendedModels.map((model) => (
-                                            <ModelCard
-                                                key={model.id}
-                                                model={model}
-                                                device={device}
-                                            />
-                                        ))}
-                                    </View>
-                                </View>
-                            )}
-
-                            <View style={styles.section}>
-                                <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>
-                                        {recommendedModels.length > 0
-                                            ? "Other Models"
-                                            : "All Models"}
-                                    </Text>
-                                    <Text style={styles.sectionDescription}>
-                                        Available open-source models with
-                                        various sizes
-                                    </Text>
-                                </View>
-
-                                <View style={styles.modelsGrid}>
-                                    {otherModels.map((model) => (
-                                        <ModelCard
-                                            key={model.id}
-                                            model={model}
-                                            device={device}
-                                        />
-                                    ))}
-                                </View>
+                        <View style={styles.section}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>
+                                    All Models
+                                </Text>
+                                <Text style={styles.sectionDescription}>
+                                    Available open-source models sorted by size
+                                </Text>
                             </View>
-                        </>
+
+                            <View style={styles.modelsGrid}>
+                                {sortedModels.map((model) => (
+                                    <ModelCard
+                                        key={model.id}
+                                        model={model}
+                                        device={device}
+                                    />
+                                ))}
+                            </View>
+                        </View>
                     ) : (
                         <View style={styles.section}>
                             <View style={styles.sectionHeader}>
@@ -715,10 +659,13 @@ const ModelCard = memo(
                                     style={({ pressed }) => [
                                         styles.pillButtonPrimary,
                                         styles.flexButton,
+                                        isUnsupported &&
+                                            styles.pillButtonDisabled,
                                         isCurrentLoading &&
                                             styles.pillButtonLoading,
                                         pressed &&
                                             !isCurrentLoading &&
+                                            !isUnsupported &&
                                             styles.buttonPressed,
                                         isModelLoading &&
                                             !isCurrentLoading &&
@@ -732,15 +679,31 @@ const ModelCard = memo(
                                         />
                                     ) : (
                                         <RemixIcon
-                                            name="play-circle-line"
+                                            name={
+                                                isUnsupported
+                                                    ? "forbid-2-line"
+                                                    : "play-circle-line"
+                                            }
                                             size={FontSizes.sm}
-                                            color={Colors.buttonPrimaryText}
+                                            color={
+                                                isUnsupported
+                                                    ? Colors.textMuted
+                                                    : Colors.buttonPrimaryText
+                                            }
                                         />
                                     )}
-                                    <Text style={styles.pillButtonPrimaryText}>
+                                    <Text
+                                        style={[
+                                            styles.pillButtonPrimaryText,
+                                            isUnsupported &&
+                                                styles.pillButtonDisabledText,
+                                        ]}
+                                    >
                                         {isCurrentLoading
                                             ? "Loading..."
-                                            : "Load Model"}
+                                            : isUnsupported
+                                              ? "Not Supported"
+                                              : "Load Model"}
                                     </Text>
                                 </Pressable>
                             )}
