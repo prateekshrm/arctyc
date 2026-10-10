@@ -15,7 +15,6 @@ const AUTHOR = {
     bio: "Software Developer",
     portfolio: "https://pratk.in",
     github: "https://github.com/prateekshrm",
-    avatar: "https://raw.githubusercontent.com/prateekshrm/readwiki/refs/heads/main/assets/profile.png",
 };
 
 const REPOSITORY_URL = "https://github.com/prateekshrm/arctyc";
@@ -101,7 +100,7 @@ const About = () => {
 
                         <View style={styles.authorCard}>
                             <Image
-                                source={AUTHOR.avatar}
+                                source={require("@/assets/profile.png")}
                                 style={styles.avatar}
                             />
 
