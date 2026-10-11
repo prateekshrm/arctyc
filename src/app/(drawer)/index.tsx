@@ -23,6 +23,9 @@ import {
     ActivityIndicator,
     Keyboard,
     KeyboardAvoidingView,
+    LayoutChangeEvent,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
     Platform,
     Pressable,
     ScrollView,
@@ -32,7 +35,7 @@ import {
     TextInput,
     View,
 } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -81,6 +84,81 @@ export default function Index() {
     const loadedChatIdRef = useRef<string | null>(null);
     const inputRef = useRef<TextInput>(null);
 
+    const [showScrollBottom, setShowScrollBottom] = useState(false);
+    const showScrollBottomRef = useRef(false);
+    const scrollYRef = useRef(0);
+    const contentHeightRef = useRef(0);
+    const containerHeightRef = useRef(0);
+
+    const checkScrollPosition = (
+        scrollY: number,
+        contentHeight: number,
+        containerHeight: number,
+    ) => {
+        if (containerHeight <= 0 || contentHeight <= 0) {
+            if (showScrollBottomRef.current) {
+                showScrollBottomRef.current = false;
+                setShowScrollBottom(false);
+            }
+            return;
+        }
+
+        const maxScroll = contentHeight - containerHeight;
+        if (maxScroll <= inputAreaHeight) {
+            if (showScrollBottomRef.current) {
+                showScrollBottomRef.current = false;
+                setShowScrollBottom(false);
+            }
+            return;
+        }
+
+        const distanceFromBottom = maxScroll - scrollY;
+        const shouldShow = distanceFromBottom > inputAreaHeight;
+
+        if (showScrollBottomRef.current !== shouldShow) {
+            showScrollBottomRef.current = shouldShow;
+            setShowScrollBottom(shouldShow);
+        }
+    };
+
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const { contentOffset, layoutMeasurement, contentSize } =
+            event.nativeEvent;
+        scrollYRef.current = contentOffset.y;
+        containerHeightRef.current = layoutMeasurement.height;
+        contentHeightRef.current = contentSize.height;
+        checkScrollPosition(
+            contentOffset.y,
+            contentSize.height,
+            layoutMeasurement.height,
+        );
+    };
+
+    const handleScrollViewLayout = (event: LayoutChangeEvent) => {
+        const height = event.nativeEvent.layout.height;
+        containerHeightRef.current = height;
+        checkScrollPosition(
+            scrollYRef.current,
+            contentHeightRef.current,
+            height,
+        );
+    };
+
+    const handleContentSizeChange = (_width: number, height: number) => {
+        contentHeightRef.current = height;
+        checkScrollPosition(
+            scrollYRef.current,
+            height,
+            containerHeightRef.current,
+        );
+    };
+
+    const handleScrollToBottom = () => {
+        scrollViewRef.current?.scrollToEnd({
+            animated: true,
+        });
+    };
+
     // Load messages when active chat changes
     useEffect(() => {
         if (loadedChatIdRef.current === activeChatId) {
@@ -89,6 +167,10 @@ export default function Index() {
         setValue("");
         chatOptionsOpen && setChatOptionsOpen(false);
         loadedChatIdRef.current = activeChatId;
+
+        showScrollBottomRef.current = false;
+        setShowScrollBottom(false);
+        scrollYRef.current = 0;
 
         scrollViewRef.current?.scrollToEnd({
             animated: true,
@@ -170,6 +252,14 @@ export default function Index() {
             hideSubscription.remove();
         };
     }, []);
+
+    useEffect(() => {
+        checkScrollPosition(
+            scrollYRef.current,
+            contentHeightRef.current,
+            containerHeightRef.current,
+        );
+    }, [inputAreaHeight, messages]);
 
     const streamAssistantResponse = async (
         conversation: Message[],
@@ -650,120 +740,84 @@ export default function Index() {
             <View style={styles.container}>
                 {/* Chat */}
                 {activeModel || activeChatId ? (
-                    <ScrollView
-                        ref={scrollViewRef}
-                        style={styles.chatContainer}
-                        contentContainerStyle={[
-                            styles.chatContentContainer,
-                            {
-                                paddingBottom: inputAreaHeight,
-                            },
-                        ]}
-                        showsVerticalScrollIndicator={false}
-                        keyboardShouldPersistTaps="handled"
-                    >
-                        {messages.length === 0 && !thinking
-                            ? renderEmptyChatState()
-                            : messages.map((message) => {
-                                  const isUser = message.role === "user";
+                    <>
+                        <ScrollView
+                            ref={scrollViewRef}
+                            style={styles.chatContainer}
+                            contentContainerStyle={[
+                                styles.chatContentContainer,
+                                {
+                                    paddingBottom: inputAreaHeight,
+                                },
+                            ]}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
+                            scrollEventThrottle={16}
+                            onScroll={handleScroll}
+                            onLayout={handleScrollViewLayout}
+                            onContentSizeChange={handleContentSizeChange}
+                        >
+                            {messages.length === 0 && !thinking
+                                ? renderEmptyChatState()
+                                : messages.map((message) => {
+                                      const isUser = message.role === "user";
 
-                                  if (!isUser && !message.content && thinking) {
-                                      return null;
-                                  }
+                                      if (
+                                          !isUser &&
+                                          !message.content &&
+                                          thinking
+                                      ) {
+                                          return null;
+                                      }
 
-                                  return (
-                                      <View
-                                          key={message.id}
-                                          style={[
-                                              styles.messageRow,
-                                              isUser
-                                                  ? styles.userMessageRow
-                                                  : styles.assistantMessageRow,
-                                          ]}
-                                      >
+                                      return (
                                           <View
-                                              style={
-                                                  isUser
-                                                      ? styles.userMessage
-                                                      : styles.assistantMessage
-                                              }
-                                          >
-                                              {isUser ? (
-                                                  <Text
-                                                      style={[
-                                                          styles.messageText,
-                                                          styles.userMessageText,
-                                                      ]}
-                                                  >
-                                                      {message.content}
-                                                  </Text>
-                                              ) : (
-                                                  <Markdown
-                                                      markdown={message.content}
-                                                      generating={generating}
-                                                  />
-                                              )}
-                                          </View>
-                                          <View
+                                              key={message.id}
                                               style={[
-                                                  styles.messageOptions,
-                                                  {
-                                                      alignSelf: isUser
-                                                          ? "flex-end"
-                                                          : "flex-start",
-                                                  },
+                                                  styles.messageRow,
+                                                  isUser
+                                                      ? styles.userMessageRow
+                                                      : styles.assistantMessageRow,
                                               ]}
                                           >
-                                              {isUser ? (
-                                                  <>
-                                                      <Pressable
-                                                          style={
-                                                              styles.messageOptionButton
-                                                          }
-                                                          onPress={() =>
-                                                              handleCopyMessage(
-                                                                  message.content,
-                                                              )
-                                                          }
+                                              <View
+                                                  style={
+                                                      isUser
+                                                          ? styles.userMessage
+                                                          : styles.assistantMessage
+                                                  }
+                                              >
+                                                  {isUser ? (
+                                                      <Text
+                                                          style={[
+                                                              styles.messageText,
+                                                              styles.userMessageText,
+                                                          ]}
                                                       >
-                                                          <RemixIcon
-                                                              name="file-copy-line"
-                                                              size={
-                                                                  FontSizes.sm
-                                                              }
-                                                              color={
-                                                                  Colors.textSecondary
-                                                              }
-                                                          />
-                                                      </Pressable>
-                                                      {!generating && (
-                                                          <Pressable
-                                                              style={
-                                                                  styles.messageOptionButton
-                                                              }
-                                                              onPress={() =>
-                                                                  handleEditMessage(
-                                                                      message.id,
-                                                                  )
-                                                              }
-                                                          >
-                                                              <RemixIcon
-                                                                  name="pencil-line"
-                                                                  size={
-                                                                      FontSizes.sm
-                                                                  }
-                                                                  color={
-                                                                      Colors.textSecondary
-                                                                  }
-                                                              />
-                                                          </Pressable>
-                                                      )}
-                                                  </>
-                                              ) : (
-                                                  (message.status ==
-                                                      "complete" ||
-                                                      message.status ==
-                                                          "stopped") && (
+                                                          {message.content}
+                                                      </Text>
+                                                  ) : (
+                                                      <Markdown
+                                                          markdown={
+                                                              message.content
+                                                          }
+                                                          generating={
+                                                              generating
+                                                          }
+                                                      />
+                                                  )}
+                                              </View>
+                                              <View
+                                                  style={[
+                                                      styles.messageOptions,
+                                                      {
+                                                          alignSelf: isUser
+                                                              ? "flex-end"
+                                                              : "flex-start",
+                                                      },
+                                                  ]}
+                                              >
+                                                  {isUser ? (
                                                       <>
                                                           <Pressable
                                                               style={
@@ -791,13 +845,13 @@ export default function Index() {
                                                                       styles.messageOptionButton
                                                                   }
                                                                   onPress={() =>
-                                                                      handleRegenerateMessage(
+                                                                      handleEditMessage(
                                                                           message.id,
                                                                       )
                                                                   }
                                                               >
                                                                   <RemixIcon
-                                                                      name="reset-left-line"
+                                                                      name="pencil-line"
                                                                       size={
                                                                           FontSizes.sm
                                                                       }
@@ -808,50 +862,132 @@ export default function Index() {
                                                               </Pressable>
                                                           )}
                                                       </>
-                                                  )
-                                              )}
+                                                  ) : (
+                                                      (message.status ==
+                                                          "complete" ||
+                                                          message.status ==
+                                                              "stopped") && (
+                                                          <>
+                                                              <Pressable
+                                                                  style={
+                                                                      styles.messageOptionButton
+                                                                  }
+                                                                  onPress={() =>
+                                                                      handleCopyMessage(
+                                                                          message.content,
+                                                                      )
+                                                                  }
+                                                              >
+                                                                  <RemixIcon
+                                                                      name="file-copy-line"
+                                                                      size={
+                                                                          FontSizes.sm
+                                                                      }
+                                                                      color={
+                                                                          Colors.textSecondary
+                                                                      }
+                                                                  />
+                                                              </Pressable>
+                                                              {!generating && (
+                                                                  <Pressable
+                                                                      style={
+                                                                          styles.messageOptionButton
+                                                                      }
+                                                                      onPress={() =>
+                                                                          handleRegenerateMessage(
+                                                                              message.id,
+                                                                          )
+                                                                      }
+                                                                  >
+                                                                      <RemixIcon
+                                                                          name="reset-left-line"
+                                                                          size={
+                                                                              FontSizes.sm
+                                                                          }
+                                                                          color={
+                                                                              Colors.textSecondary
+                                                                          }
+                                                                      />
+                                                                  </Pressable>
+                                                              )}
+                                                          </>
+                                                      )
+                                                  )}
+                                              </View>
                                           </View>
-                                      </View>
-                                  );
-                              })}
+                                      );
+                                  })}
 
-                        {thinking && (
-                            <View
+                            {thinking && (
+                                <View
+                                    style={[
+                                        styles.messageRow,
+                                        styles.assistantMessageRow,
+                                    ]}
+                                >
+                                    <View style={styles.thinkingMessage}>
+                                        <View style={styles.thinkingDots}>
+                                            <View style={styles.thinkingDot} />
+                                            <View style={styles.thinkingDot} />
+                                            <View style={styles.thinkingDot} />
+                                        </View>
+
+                                        <Text style={styles.thinkingText}>
+                                            Thinking
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
+                            {!generating &&
+                                !thinking &&
+                                messages.length > 0 &&
+                                messages[messages.length - 1]?.role ===
+                                    "assistant" &&
+                                ["complete", "stopped"].includes(
+                                    messages[messages.length - 1]?.status ?? "",
+                                ) && (
+                                    <Animated.Text
+                                        entering={FadeIn.duration(250)}
+                                        style={styles.aiDisclaimer}
+                                    >
+                                        AI can make mistakes. Check important
+                                        information.
+                                    </Animated.Text>
+                                )}
+                        </ScrollView>
+
+                        {showScrollBottom && (
+                            <Animated.View
+                                entering={FadeIn.duration(200)}
+                                exiting={FadeOut.duration(200)}
+                                pointerEvents="box-none"
                                 style={[
-                                    styles.messageRow,
-                                    styles.assistantMessageRow,
+                                    styles.scrollToBottomWrapper,
+                                    {
+                                        bottom: inputAreaHeight,
+                                    },
                                 ]}
                             >
-                                <View style={styles.thinkingMessage}>
-                                    <View style={styles.thinkingDots}>
-                                        <View style={styles.thinkingDot} />
-                                        <View style={styles.thinkingDot} />
-                                        <View style={styles.thinkingDot} />
-                                    </View>
-
-                                    <Text style={styles.thinkingText}>
-                                        Thinking
-                                    </Text>
-                                </View>
-                            </View>
-                        )}
-                        {!generating &&
-                            !thinking &&
-                            messages.length > 0 &&
-                            messages[messages.length - 1]?.role ===
-                                "assistant" &&
-                            ["complete", "stopped"].includes(
-                                messages[messages.length - 1]?.status ?? "",
-                            ) && (
-                                <Animated.Text
-                                    entering={FadeIn.duration(250)}
-                                    style={styles.aiDisclaimer}
+                                <Pressable
+                                    style={({ pressed }) => [
+                                        styles.scrollToBottomButton,
+                                        pressed &&
+                                            styles.scrollToBottomButtonPressed,
+                                    ]}
+                                    onPress={handleScrollToBottom}
+                                    hitSlop={8}
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Scroll to bottom"
                                 >
-                                    AI can make mistakes. Check important
-                                    information.
-                                </Animated.Text>
-                            )}
-                    </ScrollView>
+                                    <RemixIcon
+                                        name="arrow-down-s-line"
+                                        size={FontSizes.xl}
+                                        color={Colors.primary}
+                                    />
+                                </Pressable>
+                            </Animated.View>
+                        )}
+                    </>
                 ) : (
                     renderNoModelState()
                 )}
@@ -1189,5 +1325,36 @@ const styles = StyleSheet.create({
         fontSize: FontSizes.sm,
         fontFamily: "DMSans-SemiBold",
         color: Colors.text,
+    },
+
+    /*
+     * Scroll to bottom button
+     */
+    scrollToBottomWrapper: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        alignItems: "center",
+        zIndex: 10,
+    },
+
+    scrollToBottomButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: Colors.surfaceSecondary,
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        borderRadius: 999,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.18,
+        shadowRadius: 6,
+        elevation: 4,
+    },
+
+    scrollToBottomButtonPressed: {
+        opacity: 0.8,
+        transform: [{ scale: 0.96 }],
     },
 });
