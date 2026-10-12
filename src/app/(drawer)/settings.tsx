@@ -2,6 +2,7 @@ import { useChatStore } from "@/stores/chat.store";
 import { useDialogStore } from "@/stores/dialog.store";
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { toast } from "@/stores/toast.store";
+import { haptics } from "@/utils/haptics";
 import { Colors, FontSizes } from "@constants/theme";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -38,8 +39,9 @@ const Settings = () => {
                 confirmButton: {
                     label: "Delete All",
                     variant: "destructive",
-                    onPress: () => {
-                        deleteAllChats();
+                    onPress: async () => {
+                        await deleteAllChats();
+                        haptics.mediumImpact();
                         toast.show(
                             "Chats deleted",
                             "All chats have been permanently deleted",

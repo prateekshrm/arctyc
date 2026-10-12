@@ -11,6 +11,7 @@ import { useDialogStore } from "@/stores/dialog.store";
 import { useLayoutStore } from "@/stores/layout.store";
 import { useModelStore } from "@/stores/models.store";
 import { toast } from "@/stores/toast.store";
+import { haptics } from "@/utils/haptics";
 import { Colors, FontSizes } from "@constants/theme";
 import { streamText } from "ai";
 import * as Clipboard from "expo-clipboard";
@@ -450,6 +451,8 @@ export default function Index() {
             return;
         }
 
+        haptics.lightImpact();
+
         console.log("User prompt:", prompt);
 
         // Ensure active chat exists or create one
@@ -504,6 +507,7 @@ export default function Index() {
     };
 
     const stopGeneration = () => {
+        haptics.lightImpact();
         abortControllerRef.current?.abort();
         try {
             getActiveLanguageModel()?.getContext()?.stopCompletion();
@@ -533,8 +537,9 @@ export default function Index() {
             confirmButton: {
                 label: "Delete",
                 variant: "destructive",
-                onPress: () => {
-                    deleteChat(activeChatId as string);
+                onPress: async () => {
+                    await deleteChat(activeChatId as string);
+                    haptics.mediumImpact();
                     toast.show(
                         "Chat deleted",
                         "The chat has been permanently deleted",
@@ -571,6 +576,8 @@ export default function Index() {
             );
             return;
         }
+
+        haptics.lightImpact();
 
         const targetIndex = messages.findIndex((m) => m.id === messageId);
         if (targetIndex === -1) {
@@ -614,6 +621,8 @@ export default function Index() {
             );
             return;
         }
+
+        haptics.lightImpact();
 
         const targetIndex = messageId
             ? messages.findIndex((m) => m.id === messageId)
@@ -982,7 +991,7 @@ export default function Index() {
                                     <RemixIcon
                                         name="arrow-down-s-line"
                                         size={FontSizes.xl}
-                                        color={Colors.primary}
+                                        color={Colors.textInverse}
                                     />
                                 </Pressable>
                             </Animated.View>
@@ -1342,15 +1351,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: Colors.surfaceSecondary,
+        backgroundColor: Colors.primary,
         paddingVertical: 6,
         paddingHorizontal: 14,
         borderRadius: 999,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.18,
-        shadowRadius: 6,
-        elevation: 4,
     },
 
     scrollToBottomButtonPressed: {

@@ -25,6 +25,7 @@ import {
     DeviceCapabilities,
     getDeviceCapabilities,
 } from "@/utils/device-capabilities";
+import { haptics } from "@/utils/haptics";
 import { isModelSupported } from "@/utils/model-support";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -342,7 +343,7 @@ const ModelCard = memo(
         const [isLocalLoading, setIsLocalLoading] = useState(false);
         const isUnsupported = !isModelSupported(model, device);
 
-        const handleDownload = () => {
+        const handleDownload = async () => {
             if (isUnsupported) {
                 const deviceRam = device.advertisedRamGB ?? device.totalRamGB;
                 showDialog({
@@ -372,7 +373,14 @@ const ModelCard = memo(
                 return;
             }
 
-            downloadModel(model.id).catch(() => {});
+            haptics.lightImpact();
+
+            try {
+                const result = await downloadModel(model.id);
+                if (result) {
+                    haptics.successNotification();
+                }
+            } catch {}
         };
 
         const handleCancel = () => {
@@ -386,8 +394,11 @@ const ModelCard = memo(
                 confirmButton: {
                     label: "Delete",
                     variant: "destructive",
-                    onPress: () => {
-                        deleteModel(model.id).catch(() => {});
+                    onPress: async () => {
+                        try {
+                            await deleteModel(model.id);
+                            haptics.mediumImpact();
+                        } catch {}
                     },
                 },
                 dismissButton: {
@@ -411,9 +422,11 @@ const ModelCard = memo(
                 return;
             }
 
+            haptics.lightImpact();
             setIsLocalLoading(true);
             try {
                 await loadModel(model.id);
+                haptics.successNotification();
             } catch {
                 // Error is handled by the model store/service.
             } finally {
@@ -421,8 +434,11 @@ const ModelCard = memo(
             }
         };
 
-        const handleUnload = () => {
-            unloadModel(model.id).catch(() => {});
+        const handleUnload = async () => {
+            try {
+                await unloadModel(model.id);
+                haptics.lightImpact();
+            } catch {}
         };
 
         const isDownloading = status === "downloading";
