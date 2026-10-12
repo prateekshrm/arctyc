@@ -5,6 +5,7 @@ const STORAGE_KEY = "preferences";
 
 export type Preferences = {
     onboarded: boolean;
+    hapticsEnabled: boolean;
 };
 
 type PreferencesStore = {
@@ -12,10 +13,12 @@ type PreferencesStore = {
     hydrated: boolean;
     hydrate: () => Promise<void>;
     setOnboarded: (value: boolean) => Promise<void>;
+    setHapticsEnabled: (value: boolean) => Promise<void>;
 };
 
-const defaultPreferences = {
+const defaultPreferences: Preferences = {
     onboarded: false,
+    hapticsEnabled: true,
 };
 
 export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
@@ -26,8 +29,12 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
             const stored = await AsyncStorage.getItem(STORAGE_KEY);
 
             if (stored) {
+                const parsed = JSON.parse(stored);
                 set({
-                    preferences: JSON.parse(stored),
+                    preferences: {
+                        ...defaultPreferences,
+                        ...parsed,
+                    },
                     hydrated: true,
                 });
             } else {
@@ -45,6 +52,13 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
     },
     setOnboarded: async (value: boolean) => {
         const preferences = { ...get().preferences, onboarded: value };
+
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+
+        set({ preferences });
+    },
+    setHapticsEnabled: async (value: boolean) => {
+        const preferences = { ...get().preferences, hapticsEnabled: value };
 
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
 
