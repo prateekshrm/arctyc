@@ -1034,7 +1034,9 @@ export default function Index() {
                                 : isModelLoading
                                   ? "Loading a model..."
                                   : activeModel
-                                    ? "Ask anything"
+                                    ? activeChatId
+                                        ? "Ask a follow-up question"
+                                        : "Ask anything"
                                     : activeChatId
                                       ? "Load a model to continue"
                                       : "Load a model to start"
