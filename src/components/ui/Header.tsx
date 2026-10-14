@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         backgroundColor: Colors.primary,
+        gap: 12,
     },
 
     headerPillButton: {
@@ -137,39 +138,51 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 100,
+        alignItems: "center",
+        justifyContent: "center",
     },
 
     headerLeft: {
         flexDirection: "row",
+        alignItems: "center",
         gap: 12,
+        flex: 1,
+        minWidth: 0,
     },
 
     headerRight: {
         flexDirection: "row",
+        alignItems: "center",
         gap: 12,
+        flexShrink: 0,
     },
 
     modelPill: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 2,
+        gap: 4,
         backgroundColor: Colors.secondary,
         paddingVertical: 6,
         paddingLeft: 14,
         paddingRight: 8,
         borderRadius: 100,
-        maxWidth: "70%",
+        flexShrink: 1,
+        minWidth: 0,
+        maxWidth: "100%",
     },
 
     modelName: {
         fontSize: FontSizes.md,
         color: Colors.textInverse,
         fontFamily: "DMSans-Medium",
+        flexShrink: 1,
+        minWidth: 0,
     },
 
     text: {
         fontSize: FontSizes.xl,
         color: Colors.textInverse,
         fontFamily: "Sora-SemiBold",
+        flexShrink: 1,
     },
 });
