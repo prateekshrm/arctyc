@@ -1360,7 +1360,6 @@ const styles = StyleSheet.create({
     },
 
     scrollToBottomButtonPressed: {
-        opacity: 0.8,
         transform: [{ scale: 0.96 }],
     },
 });
