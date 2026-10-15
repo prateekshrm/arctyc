@@ -33,8 +33,6 @@ export type ModelDefinition = {
 
     capabilities: ModelCapability[];
 
-    qualityScore: number;
-
     description: string;
 };
 
@@ -66,8 +64,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "reasoning", "multilingual"],
 
-        qualityScore: 30,
-
         description:
             "Ultra-lightweight model for fast responses and lower-end devices.",
     },
@@ -91,8 +87,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         },
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
-
-        qualityScore: 55,
 
         description:
             "Small and efficient model offering a strong balance of quality and performance.",
@@ -118,8 +112,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
 
-        qualityScore: 80,
-
         description:
             "Strong general-purpose local model for reasoning, coding, and everyday conversations.",
     },
@@ -143,8 +135,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         },
 
         capabilities: ["chat", "reasoning", "coding", "multilingual"],
-
-        qualityScore: 90,
 
         description:
             "High-quality local model for powerful phones and devices with ample memory.",
@@ -175,8 +165,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "coding"],
 
-        qualityScore: 65,
-
         description:
             "Compact instruction-tuned Llama model for fast everyday conversations.",
     },
@@ -201,8 +189,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         },
 
         capabilities: ["chat", "coding"],
-
-        qualityScore: 75,
 
         description:
             "Capable general-purpose Llama model with a good balance of quality and device requirements.",
@@ -232,8 +218,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
 
         capabilities: ["chat", "multilingual"],
 
-        qualityScore: 65,
-
         description:
             "Compact instruction-tuned Gemma model designed for efficient local inference.",
     },
@@ -257,8 +241,6 @@ export const MODEL_CATALOG: ModelDefinition[] = [
         },
 
         capabilities: ["chat", "reasoning", "multilingual", "vision"],
-
-        qualityScore: 80,
 
         description:
             "Strong multimodal Gemma model for capable devices, supporting text and image understanding.",
