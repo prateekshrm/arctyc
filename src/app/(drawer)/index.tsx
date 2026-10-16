@@ -302,8 +302,6 @@ export default function Index() {
                     const result = streamText({
                         model,
 
-                        system: "You are Arctyc, a helpful AI assistant.",
-
                         messages: conversation.slice(-20).map((message) => ({
                             role: message.role,
                             content: message.content,
