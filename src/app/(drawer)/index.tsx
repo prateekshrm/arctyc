@@ -36,7 +36,14 @@ import {
     TextInput,
     View,
 } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, {
+    Easing,
+    FadeIn,
+    FadeOut,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from "react-native-reanimated";
 import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -71,6 +78,30 @@ export default function Index() {
     const createChat = useChatStore((state) => state.createChat);
     const loadChats = useChatStore((state) => state.loadChats);
     const deleteChat = useChatStore((state) => state.deleteChat);
+
+    const isChatOptionsOpen = Boolean(activeChatId && chatOptionsOpen);
+    const optionsHeight = useSharedValue(56);
+    const optionsProgress = useSharedValue(0);
+
+    useEffect(() => {
+        optionsProgress.value = withTiming(isChatOptionsOpen ? 1 : 0, {
+            duration: 250,
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        });
+    }, [isChatOptionsOpen]);
+
+    const animatedOptionsStyle = useAnimatedStyle(() => ({
+        height: optionsHeight.value * optionsProgress.value,
+        opacity: optionsProgress.value,
+    }));
+
+    const animatedOptionsContentStyle = useAnimatedStyle(() => ({
+        transform: [
+            {
+                translateY: (optionsProgress.value - 1) * 10,
+            },
+        ],
+    }));
 
     const [value, setValue] = useState("");
     const [inputHeight, setInputHeight] = useState(56);
@@ -717,8 +748,20 @@ export default function Index() {
         >
             <StatusBar style="light" />
 
-            {activeChatId && chatOptionsOpen ? (
-                <View style={styles.chatOptions}>
+            {/* Chat Options */}
+            <Animated.View
+                style={[styles.chatOptionsWrapper, animatedOptionsStyle]}
+                pointerEvents={isChatOptionsOpen ? "auto" : "none"}
+            >
+                <Animated.View
+                    style={[styles.chatOptions, animatedOptionsContentStyle]}
+                    onLayout={(e) => {
+                        const h = e.nativeEvent.layout.height;
+                        if (h > 0) {
+                            optionsHeight.value = h;
+                        }
+                    }}
+                >
                     <Pressable
                         style={styles.chatOption}
                         onPress={() => handleShareChat()}
@@ -741,8 +784,8 @@ export default function Index() {
                         />
                         <Text style={styles.chatOptionText}>Delete</Text>
                     </Pressable>
-                </View>
-            ) : null}
+                </Animated.View>
+            </Animated.View>
 
             <View style={styles.container}>
                 {/* Chat */}
@@ -1118,7 +1161,14 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.primary,
     },
 
+    chatOptionsWrapper: {
+        overflow: "hidden",
+    },
     chatOptions: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
         flexDirection: "row",
         gap: 12,
         paddingBottom: 16,
