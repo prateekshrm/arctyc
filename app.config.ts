@@ -63,6 +63,7 @@ export default (): ExpoConfig => {
                 },
             ],
 
+            "expo-sqlite",
             "expo-font",
             "expo-background-task",
             "expo-secure-store",
