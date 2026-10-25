@@ -1,5 +1,5 @@
 import { Colors, FontSizes } from "@constants/theme";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Pressable,
@@ -8,6 +8,12 @@ import {
     Text,
     View,
 } from "react-native";
+import Animated, {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from "react-native-reanimated";
 import RemixIcon from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -79,6 +85,55 @@ export default function Models() {
         [models, activeModelId],
     );
 
+    const [renderedModel, setRenderedModel] = useState<Model | null>(
+        () => activeModel ?? null,
+    );
+    const isVisibleRef = useRef(Boolean(activeModel));
+
+    const translateY = useSharedValue(activeModel ? 0 : 150);
+    const opacity = useSharedValue(activeModel ? 1 : 0);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: translateY.value }],
+        opacity: opacity.value,
+    }));
+
+    const ANIMATION_DURATION = 250;
+
+    useEffect(() => {
+        if (activeModel) {
+            setRenderedModel(activeModel);
+            if (!isVisibleRef.current) {
+                isVisibleRef.current = true;
+                translateY.value = 150;
+                opacity.value = 0;
+                translateY.value = withTiming(0, {
+                    duration: ANIMATION_DURATION,
+                    easing: Easing.out(Easing.ease),
+                });
+                opacity.value = withTiming(1, {
+                    duration: ANIMATION_DURATION,
+                    easing: Easing.out(Easing.ease),
+                });
+            }
+        } else if (isVisibleRef.current) {
+            isVisibleRef.current = false;
+            translateY.value = withTiming(150, {
+                duration: ANIMATION_DURATION,
+                easing: Easing.out(Easing.ease),
+            });
+            opacity.value = withTiming(0, {
+                duration: ANIMATION_DURATION,
+                easing: Easing.out(Easing.ease),
+            });
+
+            const timer = setTimeout(() => {
+                setRenderedModel(null);
+            }, ANIMATION_DURATION);
+            return () => clearTimeout(timer);
+        }
+    }, [activeModel, opacity, translateY]);
+
     return (
         <View style={styles.mainContainer}>
             <StatusBar style="light" />
@@ -86,7 +141,8 @@ export default function Models() {
                 <ScrollView
                     contentContainerStyle={{
                         paddingBottom:
-                            activeModel && activeContainerHeight
+                            (activeModel || renderedModel) &&
+                            activeContainerHeight
                                 ? insets.bottom + activeContainerHeight
                                 : insets.bottom + 16,
                         gap: 16,
@@ -265,8 +321,8 @@ export default function Models() {
                 </ScrollView>
             </View>
             {/* Active Model Indicator Banner */}
-            {activeModel && (
-                <View
+            {renderedModel && (
+                <Animated.View
                     onLayout={(e) => {
                         const height = Math.round(e.nativeEvent.layout.height);
                         if (height > 0) {
@@ -278,6 +334,7 @@ export default function Models() {
                         {
                             paddingBottom: insets.bottom + 16,
                         },
+                        animatedStyle,
                     ]}
                 >
                     <LinearGradient
@@ -303,7 +360,7 @@ export default function Models() {
                                     style={styles.activeModelName}
                                     numberOfLines={1}
                                 >
-                                    {activeModel.name}
+                                    {renderedModel.name}
                                 </Text>
                             </View>
                         </View>
@@ -320,7 +377,7 @@ export default function Models() {
                             </Text>
                         </Pressable>
                     </View>
-                </View>
+                </Animated.View>
             )}
         </View>
     );
