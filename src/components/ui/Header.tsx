@@ -31,7 +31,7 @@ const Header = ({ title, inDrawer = false }: HeaderProps) => {
     const navigation = useNavigation();
     const pathname = usePathname();
 
-    const showActiveModel = pathname === "/" && !!activeModel;
+    const showModel = pathname === "/";
 
     return (
         <View
@@ -66,13 +66,13 @@ const Header = ({ title, inDrawer = false }: HeaderProps) => {
                     />
                 </Pressable>
 
-                {showActiveModel ? (
+                {showModel ? (
                     <Pressable
                         style={styles.modelPill}
                         onPress={() => router.navigate("/models")}
                     >
                         <Text style={styles.modelName} numberOfLines={1}>
-                            {activeModel.name}
+                            {activeModel ? activeModel.name : "No active model"}
                         </Text>
 
                         <RemixIcon
