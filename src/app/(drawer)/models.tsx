@@ -98,7 +98,7 @@ export default function Models() {
         opacity: opacity.value,
     }));
 
-    const ANIMATION_DURATION = 250;
+    const ANIMATION_DURATION = 300;
 
     useEffect(() => {
         if (activeModel) {
