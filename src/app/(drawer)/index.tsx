@@ -104,7 +104,7 @@ export default function Index() {
     }));
 
     const [value, setValue] = useState("");
-    const [inputHeight, setInputHeight] = useState(56);
+    const [inputHeight, setInputHeight] = useState(40);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
     const [messages, setMessages] = useState<Message[]>([]);
@@ -530,7 +530,7 @@ export default function Index() {
         setMessages((current) => [...current, userMessage, assistantMessage]);
 
         setValue("");
-        setInputHeight(56);
+        setInputHeight(40);
 
         await streamAssistantResponse(conversation, assistantMessageId);
     };
@@ -1066,6 +1066,7 @@ export default function Index() {
                     pointerEvents="none"
                 />
                 <View style={styles.inputWrapper}>
+                    {/* Row 1: Text input */}
                     <TextInput
                         ref={inputRef}
                         multiline
@@ -1090,7 +1091,7 @@ export default function Index() {
                         style={[
                             styles.input,
                             {
-                                height: Math.max(56, inputHeight),
+                                height: Math.max(40, inputHeight),
                             },
                         ]}
                         onContentSizeChange={(event) => {
@@ -1098,57 +1099,60 @@ export default function Index() {
                                 event.nativeEvent.contentSize.height;
 
                             setInputHeight(
-                                Math.min(152, Math.max(56, contentHeight)),
+                                Math.min(136, Math.max(40, contentHeight)),
                             );
                         }}
                     />
 
-                    <Pressable
-                        style={[
-                            styles.sendButton,
-                            !activeModel &&
-                                !isModelLoading &&
-                                styles.loadButton,
-                            !generating &&
-                                activeModel &&
-                                !value.trim() &&
-                                styles.sendButtonDisabled,
-                        ]}
-                        onPress={
-                            generating
-                                ? stopGeneration
-                                : isModelLoading
-                                  ? undefined
-                                  : activeModel
-                                    ? sendMessage
-                                    : openModels
-                        }
-                        disabled={
-                            isModelLoading ||
-                            (!generating && !!activeModel && !value.trim())
-                        }
-                    >
-                        {generating ? (
-                            <RemixIcon
-                                name="stop-fill"
-                                size={FontSizes.xl}
-                                color={Colors.text}
-                            />
-                        ) : isModelLoading ? (
-                            <ActivityIndicator
-                                size="small"
-                                color={Colors.text}
-                            />
-                        ) : activeModel ? (
-                            <RemixIcon
-                                name="arrow-up-line"
-                                size={FontSizes.xl}
-                                color={Colors.text}
-                            />
-                        ) : (
-                            <Text style={styles.loadButtonText}>Load</Text>
-                        )}
-                    </Pressable>
+                    {/* Row 2: Actions */}
+                    <View style={styles.inputActions}>
+                        <Pressable
+                            style={[
+                                styles.sendButton,
+                                !activeModel &&
+                                    !isModelLoading &&
+                                    styles.loadButton,
+                                !generating &&
+                                    activeModel &&
+                                    !value.trim() &&
+                                    styles.sendButtonDisabled,
+                            ]}
+                            onPress={
+                                generating
+                                    ? stopGeneration
+                                    : isModelLoading
+                                      ? undefined
+                                      : activeModel
+                                        ? sendMessage
+                                        : openModels
+                            }
+                            disabled={
+                                isModelLoading ||
+                                (!generating && !!activeModel && !value.trim())
+                            }
+                        >
+                            {generating ? (
+                                <RemixIcon
+                                    name="stop-fill"
+                                    size={FontSizes.xl}
+                                    color={Colors.text}
+                                />
+                            ) : isModelLoading ? (
+                                <ActivityIndicator
+                                    size="small"
+                                    color={Colors.text}
+                                />
+                            ) : activeModel ? (
+                                <RemixIcon
+                                    name="arrow-up-line"
+                                    size={FontSizes.xl}
+                                    color={Colors.text}
+                                />
+                            ) : (
+                                <Text style={styles.loadButtonText}>Load</Text>
+                            )}
+                        </Pressable>
+                    </View>
                 </View>
             </View>
         </KeyboardAvoidingView>
@@ -1341,29 +1345,34 @@ const styles = StyleSheet.create({
 
     inputWrapper: {
         width: "100%",
-        position: "relative",
         borderRadius: 28,
         overflow: "hidden",
+        backgroundColor: Colors.primary,
     },
 
     input: {
         width: "100%",
-        minHeight: 56,
-        maxHeight: 152,
+        minHeight: 40,
+        maxHeight: 136,
         fontSize: FontSizes.md,
         fontFamily: "DMSans-Regular",
         lineHeight: 24,
         color: Colors.textInverse,
-        paddingVertical: 16,
-        paddingLeft: 20,
-        paddingRight: 56,
+        paddingTop: 16,
+        paddingBottom: 0,
+        paddingHorizontal: 20,
+        backgroundColor: Colors.primary,
+    },
+
+    inputActions: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        padding: 10,
         backgroundColor: Colors.primary,
     },
 
     sendButton: {
-        position: "absolute",
-        right: 10,
-        bottom: 10,
         height: 36,
         width: 36,
         borderRadius: 20,
