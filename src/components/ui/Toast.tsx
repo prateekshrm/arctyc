@@ -95,7 +95,7 @@ export default function Toast() {
                 clearTimeout(timerRef.current);
             }
         };
-    }, [visible, id, duration, handleDismiss, isRendered, opacity, translateY]);
+    }, [visible, id, duration, handleDismiss, opacity, translateY]);
 
     if (!isRendered && !visible) {
         return null;
