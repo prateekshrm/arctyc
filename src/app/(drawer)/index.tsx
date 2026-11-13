@@ -203,10 +203,7 @@ export default function Index() {
         showScrollBottomRef.current = false;
         setShowScrollBottom(false);
         scrollYRef.current = 0;
-
-        scrollViewRef.current?.scrollToEnd({
-            animated: true,
-        });
+        contentHeightRef.current = 0;
 
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
@@ -229,6 +226,10 @@ export default function Index() {
                             status: "complete",
                         })),
                     );
+                    // Scroll after the new messages have been rendered
+                    setTimeout(() => {
+                        scrollViewRef.current?.scrollToEnd({ animated: true });
+                    }, 100);
                 }
             })
             .catch((err) => console.error("Failed to load messages:", err));
